@@ -58,3 +58,6 @@ libs/assimp/CMakeCache.txt
 
 # executables
 BlenTard
+
+# vscode sal chien
+.vscode
