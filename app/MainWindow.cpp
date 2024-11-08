@@ -4,15 +4,30 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // Initialize main layout
     setWindowTitle("BlenTard");
     resize(1280, 720);
-    InitMenuBar(); // Initialize menu bar
     QSplitter *splitter = new QSplitter(this);
 
-    // glWidget
-    GLWidget *glWidget = new GLWidget(this);
-    splitter->addWidget(glWidget);
+    // menu bar
+    InitMenuBar();
 
+    // Layout
     QWidget *rightContainer = new QWidget(this);
     QVBoxLayout *rightLayout = new QVBoxLayout(rightContainer);
+
+    QWidget *glContainer = new QWidget(this);
+    QStackedLayout *glLayout = new QStackedLayout(glContainer);
+    glLayout->setStackingMode(QStackedLayout::StackAll);
+
+    // ToolBar
+    ToolBar *toolBar = new ToolBar(this);
+    toolBar->addTool(Tool("Move", QIcon("app/icons/light_krita_tool_move.svg")));
+    toolBar->addTool(Tool("Rectangle", QIcon("app/icons/light_krita_tool_rectangle.svg")));
+    glLayout->addWidget(toolBar);
+
+    // GLWidget
+    glWidget = new GLWidget(this);
+    glLayout->addWidget(glWidget);
+
+    splitter->addWidget(glContainer);
 
     // Hierarchy
     Hierarchy *hierarchy = new Hierarchy(this);
@@ -25,12 +40,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     rightLayout->addWidget(hierarchy);
     rightLayout->addWidget(inspector);
 
+
     // QSplitter for resize
-    
     splitter->addWidget(rightContainer);
 
-    splitter->setStretchFactor(0, 3);
-    splitter->setStretchFactor(1, 1);
+    splitter->setStretchFactor(0, 8);
+    splitter->setStretchFactor(1, 2);
 
     setCentralWidget(splitter);
 }

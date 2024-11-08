@@ -4,6 +4,7 @@
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
+    // Load stylesheet
     QFile file("MaterialDark.qss");
     if (file.open(QFile::ReadOnly)) {
         QString styleSheet = QLatin1String(file.readAll());
@@ -13,6 +14,7 @@ int main(int argc, char* argv[]) {
         qWarning() << "Failed to load stylesheet";
     }
 
+    // Create main window
     MainWindow window;
     window.show();
     return app.exec();

@@ -5,9 +5,11 @@
 #include <QFile>
 #include <QTextStream>
 #include <QMenuBar>
+#include <QStackedLayout>
 #include "app/widgets/GLWidget.h"
 #include "app/widgets/Inspector.h"
 #include "app/widgets/Hierarchy.h"
+#include "app/widgets/Tools.h"
 #include "source/headers/Mesh.h"
 
 class MainWindow : public QMainWindow {
