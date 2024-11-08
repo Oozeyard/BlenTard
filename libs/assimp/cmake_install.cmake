@@ -1,4 +1,4 @@
-# Install script for directory: /mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp
+# Install script for directory: /home/mickael/Documents/GitHub/BlenTard/libs/assimp
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -42,44 +42,48 @@ if(NOT DEFINED CMAKE_OBJDUMP)
   set(CMAKE_OBJDUMP "/usr/bin/objdump")
 endif()
 
-if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xlibassimp5.4.3-devx" OR NOT CMAKE_INSTALL_COMPONENT)
+if(CMAKE_INSTALL_COMPONENT STREQUAL "libassimp5.4.3-dev" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/assimp-5.4" TYPE FILE FILES
-    "/mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/generated/assimpConfig.cmake"
-    "/mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/generated/assimpConfigVersion.cmake"
+    "/home/mickael/Documents/GitHub/BlenTard/libs/assimp/generated/assimpConfig.cmake"
+    "/home/mickael/Documents/GitHub/BlenTard/libs/assimp/generated/assimpConfigVersion.cmake"
     )
 endif()
 
-if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xlibassimp5.4.3-devx" OR NOT CMAKE_INSTALL_COMPONENT)
+if(CMAKE_INSTALL_COMPONENT STREQUAL "libassimp5.4.3-dev" OR NOT CMAKE_INSTALL_COMPONENT)
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/assimp-5.4/assimpTargets.cmake")
-    file(DIFFERENT EXPORT_FILE_CHANGED FILES
+    file(DIFFERENT _cmake_export_file_changed FILES
          "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/assimp-5.4/assimpTargets.cmake"
-         "/mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/CMakeFiles/Export/lib/cmake/assimp-5.4/assimpTargets.cmake")
-    if(EXPORT_FILE_CHANGED)
-      file(GLOB OLD_CONFIG_FILES "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/assimp-5.4/assimpTargets-*.cmake")
-      if(OLD_CONFIG_FILES)
-        message(STATUS "Old export file \"$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/assimp-5.4/assimpTargets.cmake\" will be replaced.  Removing files [${OLD_CONFIG_FILES}].")
-        file(REMOVE ${OLD_CONFIG_FILES})
+         "/home/mickael/Documents/GitHub/BlenTard/libs/assimp/CMakeFiles/Export/48d9c4119e0f845c087d34dc4fbb1ef2/assimpTargets.cmake")
+    if(_cmake_export_file_changed)
+      file(GLOB _cmake_old_config_files "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/assimp-5.4/assimpTargets-*.cmake")
+      if(_cmake_old_config_files)
+        string(REPLACE ";" ", " _cmake_old_config_files_text "${_cmake_old_config_files}")
+        message(STATUS "Old export file \"$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/assimp-5.4/assimpTargets.cmake\" will be replaced.  Removing files [${_cmake_old_config_files_text}].")
+        unset(_cmake_old_config_files_text)
+        file(REMOVE ${_cmake_old_config_files})
       endif()
+      unset(_cmake_old_config_files)
     endif()
+    unset(_cmake_export_file_changed)
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/assimp-5.4" TYPE FILE FILES "/mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/CMakeFiles/Export/lib/cmake/assimp-5.4/assimpTargets.cmake")
-  if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^()$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/assimp-5.4" TYPE FILE FILES "/mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/CMakeFiles/Export/lib/cmake/assimp-5.4/assimpTargets-noconfig.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/assimp-5.4" TYPE FILE FILES "/home/mickael/Documents/GitHub/BlenTard/libs/assimp/CMakeFiles/Export/48d9c4119e0f845c087d34dc4fbb1ef2/assimpTargets.cmake")
+  if(CMAKE_INSTALL_CONFIG_NAME MATCHES "^()$")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/assimp-5.4" TYPE FILE FILES "/home/mickael/Documents/GitHub/BlenTard/libs/assimp/CMakeFiles/Export/48d9c4119e0f845c087d34dc4fbb1ef2/assimpTargets-noconfig.cmake")
   endif()
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/code/cmake_install.cmake")
+  include("/home/mickael/Documents/GitHub/BlenTard/libs/assimp/code/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/test/cmake_install.cmake")
+  include("/home/mickael/Documents/GitHub/BlenTard/libs/assimp/test/cmake_install.cmake")
 endif()
 
-if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xlibassimp5.4.3-devx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/assimp.pc")
+if(CMAKE_INSTALL_COMPONENT STREQUAL "libassimp5.4.3-dev" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/mickael/Documents/GitHub/BlenTard/libs/assimp/assimp.pc")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -90,5 +94,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/mickael/Documents/GitHub/BlenTard/libs/assimp/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

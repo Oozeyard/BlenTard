@@ -15,10 +15,10 @@ OBJECTS_DIR = ./tmp/obj
 
 SOURCES += main.cpp \
     src/app/MainWindow.cpp \
-    srd/app/widgets/GLWidget.cpp \
-    srd/app/widgets/Inspector.cpp \
-    srd/app/widgets/Hierarchy.cpp \
-    srd/app/widgets/Tools.cpp \
+    src/app/widgets/GLWidget.cpp \
+    src/app/widgets/Inspector.cpp \
+    src/app/widgets/Hierarchy.cpp \
+    src/app/widgets/Tools.cpp \
     src/Mesh.cpp \
     src/Camera.cpp
 
@@ -33,11 +33,12 @@ HEADERS += src/app/MainWindow.h \
 INCLUDEPATH += ./libs/glm \
     ./libs/assimp/include \
     ./src \
-    ./src/widgets \
+    ./src/app \
+    ./src/app/widgets \
     ./src/shaders \
     ./src/includes 
 
-LIBS += -L./libs/assimp/bin -lassimp
+# LIBS += -L./libs/assimp/bin -lassimp
 
 
 unix: LIBS += -lGL -ldl -lpthread

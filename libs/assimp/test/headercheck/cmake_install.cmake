@@ -1,4 +1,4 @@
-# Install script for directory: /mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/test/headercheck
+# Install script for directory: /home/mickael/Documents/GitHub/BlenTard/libs/assimp/test/headercheck
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

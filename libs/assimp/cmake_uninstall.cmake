@@ -1,8 +1,8 @@
-IF(NOT EXISTS "/mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/install_manifest.txt")
-  MESSAGE(FATAL_ERROR "Cannot find install manifest: \"/mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/install_manifest.txt\"")
-ENDIF(NOT EXISTS "/mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/install_manifest.txt")
+IF(NOT EXISTS "/home/mickael/Documents/GitHub/BlenTard/libs/assimp/install_manifest.txt")
+  MESSAGE(FATAL_ERROR "Cannot find install manifest: \"/home/mickael/Documents/GitHub/BlenTard/libs/assimp/install_manifest.txt\"")
+ENDIF(NOT EXISTS "/home/mickael/Documents/GitHub/BlenTard/libs/assimp/install_manifest.txt")
 
-FILE(READ "/mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/install_manifest.txt" files)
+FILE(READ "/home/mickael/Documents/GitHub/BlenTard/libs/assimp/install_manifest.txt" files)
 STRING(REGEX REPLACE "\n" ";" files "${files}")
 FOREACH(file ${files})
   MESSAGE(STATUS "Uninstalling \"$ENV{DESTDIR}${file}\"")

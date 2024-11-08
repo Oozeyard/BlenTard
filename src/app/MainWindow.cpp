@@ -19,8 +19,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     // ToolBar
     ToolBar *toolBar = new ToolBar(this);
-    toolBar->addTool(Tool("Move", QIcon("app/icons/light_krita_tool_move.svg")));
-    toolBar->addTool(Tool("Rectangle", QIcon("app/icons/light_krita_tool_rectangle.svg")));
+    toolBar->addTool(Tool("Move", QIcon("src/app/icons/light_krita_tool_move.svg")));
+    toolBar->addTool(Tool("Rectangle", QIcon("src/app/icons/light_krita_tool_rectangle.svg")));
     glLayout->addWidget(toolBar);
 
     // GLWidget

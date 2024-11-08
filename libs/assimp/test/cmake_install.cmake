@@ -1,4 +1,4 @@
-# Install script for directory: /mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/test
+# Install script for directory: /home/mickael/Documents/GitHub/BlenTard/libs/assimp/test
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -44,7 +44,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/mnt/c/Users/Emmanuel/Desktop/Bentardv1/libs/assimp/test/headercheck/cmake_install.cmake")
+  include("/home/mickael/Documents/GitHub/BlenTard/libs/assimp/test/headercheck/cmake_install.cmake")
 
 endif()
 
