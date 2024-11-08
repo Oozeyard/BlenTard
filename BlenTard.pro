@@ -11,11 +11,15 @@ INCLUDEPATH += ./app \
     ./source/headers \
     ./extern
 
-SOURCES += main.cc \
-    app/MainWindow.cc \
+SOURCES += main.cpp \
+    app/MainWindow.cpp \
     app/widgets/GLWidget.cpp \
+    app/widgets/Inspector.cpp \
+    app/widgets/Hierarchy.cpp \
     source/Mesh.cpp 
 
 HEADERS += app/MainWindow.h \
     app/widgets/GLWidget.h \
+    app/widgets/Inspector.h \
+    app/widgets/Hierarchy.h \
     source/headers/Mesh.h
