@@ -14,19 +14,22 @@ MOC_DIR = ./tmp/moc
 OBJECTS_DIR = ./tmp/obj
 
 SOURCES += Main.cpp \
-           src/MainWindow.cpp \
-           src/GLWidget.cpp \
-           src/Mesh.cpp
+    src/MainWindow.cpp \
+    src/widgets/GLWidget.cpp \
+    src/Mesh.cpp \
+    src/Camera.cpp
 
-HEADERS += includes/MainWindow.h \
-           includes/GLWidget.h \
-           includes/Mesh.h
+HEADERS += src/widgets/GLWidget.h \
+    src/includes/MainWindow.h \
+    src/includes/Mesh.h \    
+    src/includes/Camera.h
 
 INCLUDEPATH += ./libs/glm \
-               ./libs/assimp/include \
-               ./src \
-               ./includes \
-               ./shaders
+    ./libs/assimp/include \
+    ./src \
+    ./src/widgets \
+    ./src/shaders \
+    ./src/includes 
 
 LIBS += -L./libs/assimp/bin -lassimp
 

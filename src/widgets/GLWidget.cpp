@@ -13,6 +13,7 @@ GLWidget::~GLWidget()
     makeCurrent();
     delete m_program;
     delete m_mesh;
+    delete m_camera;
     doneCurrent();
 }
 
@@ -42,6 +43,26 @@ void GLWidget::initShaders(QOpenGLShaderProgram *program, std::string vertex_sha
     }
 }
 
+void GLWidget::drawGrid(float gridSize, float gridSpacing)
+{
+    glBegin(GL_LINES);
+    glColor3f(0.8f, 0.8f, 0.8f);  // Light gray color for grid lines
+
+    // Draw lines parallel to the X-axis
+    for (float i = -gridSize; i <= gridSize; i += gridSpacing) {
+        glVertex3f(i, 0, -gridSize);
+        glVertex3f(i, 0, gridSize);
+    }
+
+    // Draw lines parallel to the Z-axis
+    for (float j = -gridSize; j <= gridSize; j += gridSpacing) {
+        glVertex3f(-gridSize, 0, j);
+        glVertex3f(gridSize, 0, j);
+    }
+    glEnd();
+}
+
+
 void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
@@ -52,17 +73,19 @@ void GLWidget::initializeGL()
     // Create a new shader program
     m_program = new QOpenGLShaderProgram;
 
-    initShaders(m_program, "./shaders/vertex_shader.glsl", "./shaders/fragment_shader.glsl");
+    
+
+    initShaders(m_program, "./src/shaders/vertex_shader.glsl", "./src/shaders/fragment_shader.glsl");
 
     m_mesh = new Mesh();
+    m_camera = new Camera();
 
     m_model.setToIdentity();
-    m_model.rotate(65.0f, 54.0f, 84.0f, 1.0f);
+    // m_model.rotate(65.0f, 54.0f, 84.0f, 1.0f);
     m_view.setToIdentity();
-    m_view.translate(0.0f, 0.0f, -5.0f);
+    // m_view.translate(0.0f, 0.0f, -5.0f);
 
 
-    
     // m_program->release();
 
 }
@@ -88,11 +111,15 @@ void GLWidget::paintGL()
 
     m_program->bind();
 
+    drawGrid();
+    m_camera->computeView(m_view, m_projection);
+
     m_program->setUniformValue("projection", m_projection);
     m_program->setUniformValue("view", m_view);
     m_program->setUniformValue("model", m_model);
 
     m_mesh->draw(m_program);
+    update();
 
     m_program->release();
 
@@ -103,14 +130,7 @@ void GLWidget::resizeGL(int w, int h)
 {
     glViewport(0, 0, w, h);  // Viewport
 
-    // Calculate aspect ratio
-    qreal aspect = qreal(w) / qreal(h ? h : 1);
-
-    // Set near plane, far plane, field of view
-    const qreal zNear = 0.01, zFar = 100.0, fov = 45.0;
-
-    m_projection.setToIdentity();
-    m_projection.perspective(fov, aspect, zNear, zFar);
+    m_projection = m_camera->getProjectionMatrix();
 }
 
 void GLWidget::keyPressEvent(QKeyEvent *event)
@@ -125,20 +145,22 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
 
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
-    std::cout << "Mouse pressed: " << event->button() << std::endl;
+    // std::cout << "Mouse pressed: " << event->button() << std::endl;
+    m_camera->mousePressEvent(event);
+    // update();
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    std::cout << "Mouse moved: " << event->pos().x() << ", " << event->pos().y() << std::endl;
+    // std::cout << "Mouse moved: " << event->pos().x() << ", " << event->pos().y() << std::endl;
+    m_camera->mouseMoveEvent(event);
+    // update();
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event)
 {
-    std::cout << "Wheel moved: " << event->angleDelta().y() << std::endl;
-    if (event->angleDelta().y() > 0) {
-        // Zoom avant
-    } else {
-        // Zoom arrière
-    }
+    // std::cout << "Wheel moved: " << event->angleDelta().y() << std::endl;
+    m_camera->wheelEvent(event);
+    // update();
+
 }

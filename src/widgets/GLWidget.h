@@ -11,6 +11,7 @@
 #include <QWheelEvent>
 
 #include "Mesh.h"
+#include "Camera.h"
 
 #include <iostream>
 #include <string>
@@ -40,10 +41,15 @@ protected:
 
 private:
     void initShaders(QOpenGLShaderProgram *program, std::string vertex_shader, std::string fragment_shader);
+    void drawGrid(float gridSize = 10.0f, float gridSpacing = 1.0f);
+    void updateCamera();
 
     QOpenGLShaderProgram *m_program;
 
     QOpenGLVertexArrayObject m_vao; // Vertex Array Object
+
+    // Camera 
+    Camera *m_camera;
 
     // Transformation matrix
     QMatrix4x4 m_projection;
