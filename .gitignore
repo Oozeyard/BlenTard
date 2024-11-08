@@ -52,3 +52,9 @@ compile_commands.json
 *creator.user*
 
 *_qmlcache.qrc
+
+# assimp
+libs/assimp/CMakeCache.txt
+
+# executables
+BlenTard
