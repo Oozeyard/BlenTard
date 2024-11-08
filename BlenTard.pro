@@ -1,21 +1,35 @@
 # -------------------------------------------------
 #                     BlenTard
 # -------------------------------------------------
-QT += core gui widgets opengl
+
+QT += core gui opengl
+
+greaterThan(QT_MAJOR_VERSION, 5): QT += widgets
+
+CONFIG += c++11
+
 TARGET = BlenTard
 
-INCLUDEPATH += ./app \
-    ./app/widgets \
-    ./source \
-    ./source/shaders \
-    ./source/headers \
-    ./extern
+MOC_DIR = ./tmp/moc
+OBJECTS_DIR = ./tmp/obj
 
-SOURCES += main.cc \
-    app/MainWindow.cc \
-    app/widgets/GLWidget.cpp \
-    source/Mesh.cpp 
+SOURCES += Main.cpp \
+           src/MainWindow.cpp \
+           src/GLWidget.cpp \
+           src/Mesh.cpp
 
-HEADERS += app/MainWindow.h \
-    app/widgets/GLWidget.h \
-    source/headers/Mesh.h
+HEADERS += includes/MainWindow.h \
+           includes/GLWidget.h \
+           includes/Mesh.h
+
+INCLUDEPATH += ./libs/glm \
+               ./libs/assimp/include \
+               ./src \
+               ./includes \
+               ./shaders
+
+LIBS += -L./libs/assimp/bin -lassimp
+
+
+unix: LIBS += -lGL -ldl -lpthread
+win32: LIBS += -lopengl32 -lgdi32
