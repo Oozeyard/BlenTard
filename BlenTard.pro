@@ -1,27 +1,44 @@
 # -------------------------------------------------
 #                     BlenTard
 # -------------------------------------------------
-QT += core gui widgets opengl
+
+QT += core gui opengl
+
+greaterThan(QT_MAJOR_VERSION, 5): QT += widgets
+
+CONFIG += c++11
+
 TARGET = BlenTard
 
-INCLUDEPATH += ./app \
-    ./app/widgets \
-    ./source \
-    ./source/shaders \
-    ./source/headers \
-    ./extern
+MOC_DIR = ./tmp/moc
+OBJECTS_DIR = ./tmp/obj
 
 SOURCES += main.cpp \
-    app/MainWindow.cpp \
-    app/widgets/GLWidget.cpp \
-    app/widgets/Inspector.cpp \
-    app/widgets/Hierarchy.cpp \
-    app/widgets/Tools.cpp \
-    source/Mesh.cpp 
+    src/app/MainWindow.cpp \
+    srd/app/widgets/GLWidget.cpp \
+    srd/app/widgets/Inspector.cpp \
+    srd/app/widgets/Hierarchy.cpp \
+    srd/app/widgets/Tools.cpp \
+    src/Mesh.cpp \
+    src/Camera.cpp
 
-HEADERS += app/MainWindow.h \
-    app/widgets/GLWidget.h \
-    app/widgets/Inspector.h \
-    app/widgets/Hierarchy.h \
-    app/widgets/Tools.h \
-    source/headers/Mesh.h
+HEADERS += src/app/MainWindow.h \
+    src/app/widgets/GLWidget.h \
+    src/app/widgets/Inspector.h \
+    src/app/widgets/Hierarchy.h \
+    src/app/widgets/Tools.h \
+    src/includes/Mesh.h \    
+    src/includes/Camera.h
+
+INCLUDEPATH += ./libs/glm \
+    ./libs/assimp/include \
+    ./src \
+    ./src/widgets \
+    ./src/shaders \
+    ./src/includes 
+
+LIBS += -L./libs/assimp/bin -lassimp
+
+
+unix: LIBS += -lGL -ldl -lpthread
+win32: LIBS += -lopengl32 -lgdi32
