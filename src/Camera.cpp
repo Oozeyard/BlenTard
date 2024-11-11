@@ -21,6 +21,7 @@ void Camera::init()
     m_euler.setY(qRadiansToDegrees(atan2(direction.x(), direction.z())));
     m_euler.setZ(0.0f);
     m_rotation = QQuaternion::fromEulerAngles(m_euler);
+    m_front = m_rotation.rotatedVector(WORLD_UP);
 }
 
 void Camera::computeView(QMatrix4x4 &view, QMatrix4x4 &projection) 
@@ -74,6 +75,7 @@ void Camera::mouseMoveEvent(QMouseEvent *event)
 
         m_rotation = rotationX * rotationY;
         m_euler = m_rotation.toEulerAngles();
+        m_front = m_rotation.rotatedVector(WORLD_UP);
         m_position = m_target + m_rotation.rotatedVector(m_position - m_target);
 
         m_lastMousePos = event->pos();

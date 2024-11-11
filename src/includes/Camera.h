@@ -28,6 +28,7 @@ public:
     // Setters
     void setPosition(const QVector3D &position) { m_position = position; }
     void setTarget(const QVector3D &target) { m_target = target; }
+    void setFront(const QVector3D &front) { m_front = front; }
     void setFov(float fov) { m_fov = fov; }
     void setAspect(float aspect) { m_aspect = aspect; }
     void setNear(float near) { m_near = near; }
@@ -39,6 +40,7 @@ public:
     // Getters
     QVector3D getPosition() const { return m_position; }
     QVector3D getTarget() const { return m_target; }
+    QVector3D getFront() const { return m_front; }
     float getFov() const { return m_fov; }
     float getAspect() const { return m_aspect; }
     float getNear() const { return m_near; }
@@ -60,6 +62,7 @@ private:
     // Parameters
     QVector3D m_position { QVector3D(0.0f, 5.0f, 10.0f) };
     QVector3D m_target   { QVector3D(0.0f, 0.0f, 0.0f) };
+    QVector3D m_front    { QVector3D(0.0f, 0.0f, -1.0f) };
     float m_fov     { 45.0f };
     float m_aspect  { 16.0f / 9.0f };
     float m_near    { 0.1f };

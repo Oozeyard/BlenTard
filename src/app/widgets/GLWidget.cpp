@@ -84,7 +84,7 @@ void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);  // Fond noir
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);  // Fond noir
 
     
     // Create a new shader program
@@ -92,7 +92,6 @@ void GLWidget::initializeGL()
 
     initShaders(m_program, "./src/shaders/vertex_shader.glsl", "./src/shaders/fragment_shader.glsl");
     
-
     m_mesh = new Mesh();
     m_camera = new Camera();
 
@@ -111,7 +110,8 @@ void GLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
+
 
     /* // Couleur du triangle
     glColor3f(1.0f, 0.0f, 0.0f);  // Rouge
@@ -133,6 +133,10 @@ void GLWidget::paintGL()
     m_program->setUniformValue("projection", m_projection);
     m_program->setUniformValue("view", m_view);
     m_program->setUniformValue("model", m_model);
+
+    // light
+    m_program->setUniformValue("ligth_position", m_camera->getPosition());
+    m_program->setUniformValue("ligth_direction", m_camera->getFront());
 
     m_mesh->draw(m_program);
     update();
