@@ -20,7 +20,8 @@ SOURCES += main.cpp \
     src/app/widgets/Hierarchy.cpp \
     src/app/widgets/Tools.cpp \
     src/Mesh.cpp \
-    src/Camera.cpp
+    src/Camera.cpp \
+    src/Node.cpp
 
 HEADERS += src/app/MainWindow.h \
     src/app/widgets/GLWidget.h \
@@ -28,7 +29,9 @@ HEADERS += src/app/MainWindow.h \
     src/app/widgets/Hierarchy.h \
     src/app/widgets/Tools.h \
     src/includes/Mesh.h \    
-    src/includes/Camera.h
+    src/includes/Camera.h \
+    src/includes/Transfrom.h \
+    src/includes/Node.h
 
 INCLUDEPATH += ./libs/glm-0.9.7.1 \
     ./libs/assimp-5.4.3/include \

@@ -93,7 +93,7 @@ void GLWidget::initializeGL()
     initShaders(m_program, "./src/shaders/vertex_shader.glsl", "./src/shaders/fragment_shader.glsl");
     
     m_mesh = new Mesh();
-    m_camera = new Camera();
+    m_camera = new Camera("MainCamera");
 
     m_model.setToIdentity();
     // m_model.rotate(65.0f, 54.0f, 84.0f, 1.0f);
@@ -135,7 +135,7 @@ void GLWidget::paintGL()
     m_program->setUniformValue("model", m_model);
 
     // light
-    m_program->setUniformValue("ligth_position", m_camera->getPosition());
+    m_program->setUniformValue("ligth_position", m_camera->transform.position);
     m_program->setUniformValue("ligth_direction", m_camera->getFront());
 
     m_mesh->draw(m_program);

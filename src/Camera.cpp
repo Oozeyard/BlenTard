@@ -1,27 +1,29 @@
 #include "Camera.h"
 
-Camera::Camera(QObject *parent)
-    : QObject(parent)
+Camera::Camera(const QString& name, Node *parent) : 
+    Node(name, parent)
 {
+    transform.position = QVector3D(0.0f, 5.0f, 10.0f);
     init();
 }
 
-Camera::Camera(QVector3D position, QVector3D target, QObject *parent)
-    : QObject(parent),
-      m_position(position),
-      m_target(target)
+Camera::Camera(const QString& name, QVector3D position, QVector3D target, Node *parent) : 
+    Node(name, parent),
+    m_target(target)
 {
     init();
+    transform.position = position;
+
 }
 
 void Camera::init()
 {
-    QVector3D direction = (m_target - m_position).normalized();
-    m_euler.setX(qRadiansToDegrees(atan2(direction.y(), direction.z())));
-    m_euler.setY(qRadiansToDegrees(atan2(direction.x(), direction.z())));
-    m_euler.setZ(0.0f);
-    m_rotation = QQuaternion::fromEulerAngles(m_euler);
-    m_front = m_rotation.rotatedVector(WORLD_UP);
+    QVector3D direction = (m_target - transform.position).normalized();
+    transform.rotationEuler.setX(qRadiansToDegrees(atan2(direction.y(), direction.z())));
+    transform.rotationEuler.setY(qRadiansToDegrees(atan2(direction.x(), direction.z())));
+    transform.rotationEuler.setZ(0.0f);
+    transform.rotation = QQuaternion::fromEulerAngles(transform.rotationEuler);
+    m_front = transform.rotation.rotatedVector(WORLD_UP);
 }
 
 void Camera::computeView(QMatrix4x4 &view, QMatrix4x4 &projection) 
@@ -31,7 +33,7 @@ void Camera::computeView(QMatrix4x4 &view, QMatrix4x4 &projection)
     m_projectionMatrix = projection;
 
     view.setToIdentity();
-    view.lookAt(m_position, m_target, WORLD_UP);
+    view.lookAt(transform.position, m_target, WORLD_UP);
     m_viewMatrix = view; 
 }
 
@@ -55,10 +57,10 @@ void Camera::mouseMoveEvent(QMouseEvent *event)
         float dx = delta.x() * m_movementSpeed;
         float dy = delta.y() * m_movementSpeed;
 
-        QVector3D right = QVector3D::crossProduct(WORLD_UP, m_target - m_position).normalized();
-        QVector3D up = QVector3D::crossProduct(m_target - m_position, right).normalized();
+        QVector3D right = QVector3D::crossProduct(WORLD_UP, m_target - transform.position).normalized();
+        QVector3D up = QVector3D::crossProduct(m_target - transform.position, right).normalized();
 
-        m_position += right * dx + up * dy;
+        transform.position += right * dx + up * dy;
         m_target += right * dx + up * dy;
 
         m_lastMousePos = event->pos();
@@ -70,13 +72,13 @@ void Camera::mouseMoveEvent(QMouseEvent *event)
         float dy = delta.y() * m_mouseSensitivity;
 
         QQuaternion rotationX = QQuaternion::fromAxisAndAngle(WORLD_UP, dx);
-        QVector3D right = QVector3D::crossProduct(WORLD_UP, m_target - m_position).normalized();
+        QVector3D right = QVector3D::crossProduct(WORLD_UP, m_target - transform.position).normalized();
         QQuaternion rotationY = QQuaternion::fromAxisAndAngle(right, dy);
 
-        m_rotation = rotationX * rotationY;
-        m_euler = m_rotation.toEulerAngles();
-        m_front = m_rotation.rotatedVector(WORLD_UP);
-        m_position = m_target + m_rotation.rotatedVector(m_position - m_target);
+        transform.rotation = rotationX * rotationY;
+        transform.rotationEuler = transform.rotation.toEulerAngles();
+        m_front = transform.rotation.rotatedVector(WORLD_UP);
+        transform.position = m_target + transform.rotation.rotatedVector(transform.position - m_target);
 
         m_lastMousePos = event->pos();
     }
@@ -87,11 +89,11 @@ void Camera::mouseMoveEvent(QMouseEvent *event)
 void Camera::wheelEvent(QWheelEvent *event)
 {
     float delta = glm::clamp((float)event->angleDelta().y(), -120.0f, 120.0f) / 120.0f; // Normalize to -1, 0, or 1
-    float distance = (m_position - m_target).length();
+    float distance = (transform.position - m_target).length();
     distance *= (1.0f - delta * m_zoomSpeed);  // Adjust distance with zoom sensitivity
 
-    QVector3D direction = (m_position - m_target).normalized();
-    m_position = m_target + direction * distance;
+    QVector3D direction = (transform.position - m_target).normalized();
+    transform.position = m_target + direction * distance;
 
     // Ensure distance remains within reasonable bounds
     float minDistance = 0.5f;
