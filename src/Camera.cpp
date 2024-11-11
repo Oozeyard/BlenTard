@@ -1,38 +1,39 @@
 #include "Camera.h"
 
 Camera::Camera(QObject *parent)
-    : QObject(parent),
-      m_position(0.0f, 5.0f, 10.0f),
-      m_target(0.0f, 0.0f, 0.0f),
-      m_up(0.0f, 1.0f, 0.0f)
+    : QObject(parent)
 {
-    updateCamera();
+    init();
 }
 
-Camera::Camera(QVector3D position, QVector3D target, QVector3D up, QObject *parent)
+Camera::Camera(QVector3D position, QVector3D target, QObject *parent)
     : QObject(parent),
       m_position(position),
-      m_target(target),
-      m_up(up)
+      m_target(target)
 {
-    updateCamera();
+    init();
 }
 
-Camera::~Camera() {}
-
-void Camera::updateCamera()
+void Camera::init()
 {
-    m_rotation = QQuaternion::fromEulerAngles(m_pitch, m_yaw, m_roll);
+    QVector3D direction = (m_target - m_position).normalized();
+    m_euler.setX(qRadiansToDegrees(atan2(direction.y(), direction.z())));
+    m_euler.setY(qRadiansToDegrees(atan2(direction.x(), direction.z())));
+    m_euler.setZ(0.0f);
+    m_rotation = QQuaternion::fromEulerAngles(m_euler);
 }
 
 void Camera::computeView(QMatrix4x4 &view, QMatrix4x4 &projection) 
 { 
     projection.setToIdentity();  
     projection.perspective(m_fov, m_aspect, m_near, m_far);
+    m_projectionMatrix = projection;
 
     view.setToIdentity();
-    view.lookAt(m_position, m_target, m_up);
+    view.lookAt(m_position, m_target, WORLD_UP);
+    m_viewMatrix = view; 
 }
+
 
 void Camera::keyPressEvent(QKeyEvent *event)
 {
@@ -48,47 +49,42 @@ void Camera::mousePressEvent(QMouseEvent *event)
 
 void Camera::mouseMoveEvent(QMouseEvent *event)
 {
-    /*if (!m_mousePressed) return;
+    if (m_mousePressed && event->buttons() & Qt::MiddleButton && event->modifiers() & Qt::ShiftModifier) {
+        QPoint delta = event->pos() - m_lastMousePos;
+        float dx = delta.x() * m_movementSpeed;
+        float dy = delta.y() * m_movementSpeed;
 
-    QPoint currentMousePos = event->pos();
-    float xOffset = currentMousePos.x() - m_lastMousePos.x();
-    float yOffset = m_lastMousePos.y() - currentMousePos.y(); // Inverted since y-coordinates go down in Qt
-    m_lastMousePos = currentMousePos;
+        QVector3D right = QVector3D::crossProduct(WORLD_UP, m_target - m_position).normalized();
+        QVector3D up = QVector3D::crossProduct(m_target - m_position, right).normalized();
 
-    if (event->buttons() & Qt::RightButton) {
-        // Orbit around the target
-        xOffset *= m_mouseSensitivity;
-        yOffset *= m_mouseSensitivity;
+        m_position += right * dx + up * dy;
+        m_target += right * dx + up * dy;
 
-        m_yaw += xOffset;
-        m_pitch += yOffset;
-
-        // Clamp pitch
-        if (m_pitch > 89.0f) m_pitch = 89.0f;
-        if (m_pitch < -89.0f) m_pitch = -89.0f;
-
-        updateCameraVectors();
+        m_lastMousePos = event->pos();
     }
-    else if (event->buttons() & Qt::MiddleButton) {
-        // Pan the camera
-        float panSensitivity = 0.005f;
-        xOffset *= panSensitivity;
-        yOffset *= panSensitivity;
 
-        QVector3D forward = (m_target - m_position).normalized();
-        QVector3D right = QVector3D::crossProduct(forward, m_up).normalized();
-        QVector3D up = QVector3D::crossProduct(right, forward).normalized();
+    if (m_mousePressed && event->buttons() & Qt::MiddleButton && !(event->modifiers() & Qt::ShiftModifier)) {
+        QPoint delta = event->pos() - m_lastMousePos;
+        float dx = -delta.x() * m_mouseSensitivity;
+        float dy = delta.y() * m_mouseSensitivity;
 
-        m_position -= right * xOffset + up * yOffset;
-        m_target -= right * xOffset + up * yOffset;
-    }*/
+        QQuaternion rotationX = QQuaternion::fromAxisAndAngle(WORLD_UP, dx);
+        QVector3D right = QVector3D::crossProduct(WORLD_UP, m_target - m_position).normalized();
+        QQuaternion rotationY = QQuaternion::fromAxisAndAngle(right, dy);
+
+        m_rotation = rotationX * rotationY;
+        m_euler = m_rotation.toEulerAngles();
+        m_position = m_target + m_rotation.rotatedVector(m_position - m_target);
+
+        m_lastMousePos = event->pos();
+    }
 
 
 }
 
 void Camera::wheelEvent(QWheelEvent *event)
 {
-    float delta = event->angleDelta().y() / 120.0f; // Normalize to -1, 0, or 1
+    float delta = glm::clamp((float)event->angleDelta().y(), -120.0f, 120.0f) / 120.0f; // Normalize to -1, 0, or 1
     float distance = (m_position - m_target).length();
     distance *= (1.0f - delta * m_zoomSpeed);  // Adjust distance with zoom sensitivity
 

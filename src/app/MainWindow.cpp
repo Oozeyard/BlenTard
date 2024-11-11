@@ -21,10 +21,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     ToolBar *toolBar = new ToolBar(this);
     toolBar->addTool(Tool("Move", QIcon("src/app/icons/light_krita_tool_move.svg")));
     toolBar->addTool(Tool("Rectangle", QIcon("src/app/icons/light_krita_tool_rectangle.svg")));
+        toolBar->setAttribute(Qt::WA_TransparentForMouseEvents, true);
     glLayout->addWidget(toolBar);
 
     // GLWidget
     glWidget = new GLWidget(this);
+    glWidget->setFocusPolicy(Qt::StrongFocus);
     glLayout->addWidget(glWidget);
 
     splitter->addWidget(glContainer);

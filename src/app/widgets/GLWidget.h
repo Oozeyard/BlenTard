@@ -41,7 +41,7 @@ protected:
 
 private:
     void initShaders(QOpenGLShaderProgram *program, std::string vertex_shader, std::string fragment_shader);
-    void drawGrid(float gridSize = 10.0f, float gridSpacing = 1.0f);
+    void drawGrid(float gridSize = 10.0f, int divisions = 10.0f);
     void updateCamera();
 
     QOpenGLShaderProgram *m_program;

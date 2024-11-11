@@ -30,7 +30,7 @@ HEADERS += src/app/MainWindow.h \
     src/includes/Mesh.h \    
     src/includes/Camera.h
 
-INCLUDEPATH += ./libs/glm-1.0.1 \
+INCLUDEPATH += ./libs/glm-0.9.7.1 \
     ./libs/assimp-5.4.3/include \
     ./src \
     ./src/app \

@@ -9,6 +9,8 @@
 #include <QPaintEvent>
 #include <QPainterPath>
 
+#include <iostream>
+
 class Tool {
 
 public:
@@ -37,8 +39,10 @@ public:
     void addTool(Tool tool) {tools.push_back(tool);}
     void addSeparator();
 
+    Tool getToolAt(const QPoint &pos) const;
+
     // Events
-    //void mousePressEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
     //void mouseReleaseEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override; // paint own widget
 
