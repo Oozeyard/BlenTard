@@ -30,7 +30,7 @@ HEADERS += src/app/MainWindow.h \
     src/app/widgets/Tools.h \
     src/includes/Mesh.h \    
     src/includes/Camera.h \
-    src/includes/Transfrom.h \
+    src/includes/Transform.h \
     src/includes/Node.h
 
 INCLUDEPATH += ./libs/glm-0.9.7.1 \
