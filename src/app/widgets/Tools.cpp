@@ -33,6 +33,15 @@ void ToolBar::paintEvent(QPaintEvent *event) {
 
 }
 
+Tool ToolBar::getToolAt(const QPoint &pos) const {
+    int index = pos.y() / 40;
+    if (index >= 0 && index < tools.size()) {
+        return tools[index];
+    }
+    return Tool(); // Return a default Tool if the index is out of range
+}
+
 void ToolBar::mousePressEvent(QMouseEvent *event) {
-    std::cout << "Mouse pressed on toolbar" << std::endl;
+    std::cout << "Tool pressed: " << getToolAt(event->pos()).getName().toStdString() << std::endl;
+    
 }

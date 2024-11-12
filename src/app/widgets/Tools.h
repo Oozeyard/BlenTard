@@ -10,6 +10,8 @@
 #include <QPainterPath>
 #include <iostream>
 
+#include <iostream>
+
 class Tool {
 
 public:
@@ -38,6 +40,8 @@ public:
     void addTool(Tool tool) {tools.push_back(tool);}
     int GetToolsSize() {return tools.size();}
     void addSeparator();
+
+    Tool getToolAt(const QPoint &pos) const;
 
     // Events
     void mousePressEvent(QMouseEvent *event) override;

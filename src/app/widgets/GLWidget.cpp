@@ -43,23 +43,40 @@ void GLWidget::initShaders(QOpenGLShaderProgram *program, std::string vertex_sha
     }
 }
 
-void GLWidget::drawGrid(float gridSize, float gridSpacing)
+void GLWidget::drawGrid(float gridSize, int divisions)
 {
+    // Activer les fonctionnalités OpenGL nécessaires
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Couleur et largeur des lignes
+    QColor mainColor(255, 255, 255, 128);   // Lignes principales
+    QColor subColor(255, 255, 255, 64);     // Lignes secondaires
+
+    float step = gridSize / divisions;
+
     glBegin(GL_LINES);
-    glColor3f(0.8f, 0.8f, 0.8f);  // Light gray color for grid lines
 
-    // Draw lines parallel to the X-axis
-    for (float i = -gridSize; i <= gridSize; i += gridSpacing) {
-        glVertex3f(i, 0, -gridSize);
-        glVertex3f(i, 0, gridSize);
+    // Lignes de la grille principale
+    for (int i = -divisions; i <= divisions; ++i) {
+        if (i % 10 == 0) {
+            glColor4f(mainColor.redF(), mainColor.greenF(), mainColor.blueF(), mainColor.alphaF());
+        } else {
+            glColor4f(subColor.redF(), subColor.greenF(), subColor.blueF(), subColor.alphaF());
+        }
+
+        // Lignes verticales
+        glVertex3f(i * step, 0, -gridSize);
+        glVertex3f(i * step, 0, gridSize);
+
+        // Lignes horizontales
+        glVertex3f(-gridSize, 0, i * step);
+        glVertex3f(gridSize, 0, i * step);
     }
 
-    // Draw lines parallel to the Z-axis
-    for (float j = -gridSize; j <= gridSize; j += gridSpacing) {
-        glVertex3f(-gridSize, 0, j);
-        glVertex3f(gridSize, 0, j);
-    }
     glEnd();
+
+    glDisable(GL_BLEND);
 }
 
 
@@ -67,18 +84,16 @@ void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);  // Fond noir
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);  // Fond noir
 
     
     // Create a new shader program
     m_program = new QOpenGLShaderProgram;
 
-    
-
     initShaders(m_program, "./src/shaders/vertex_shader.glsl", "./src/shaders/fragment_shader.glsl");
-
+    
     m_mesh = new Mesh();
-    m_camera = new Camera();
+    m_camera = new Camera("MainCamera");
 
     m_model.setToIdentity();
     // m_model.rotate(65.0f, 54.0f, 84.0f, 1.0f);
@@ -95,7 +110,8 @@ void GLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
+
 
     /* // Couleur du triangle
     glColor3f(1.0f, 0.0f, 0.0f);  // Rouge
@@ -118,6 +134,10 @@ void GLWidget::paintGL()
     m_program->setUniformValue("view", m_view);
     m_program->setUniformValue("model", m_model);
 
+    // light
+    m_program->setUniformValue("ligth_position", m_camera->transform.position);
+    m_program->setUniformValue("ligth_direction", m_camera->getFront());
+
     m_mesh->draw(m_program);
     update();
 
@@ -136,31 +156,25 @@ void GLWidget::resizeGL(int w, int h)
 void GLWidget::keyPressEvent(QKeyEvent *event)
 {
     std::cout << "Key pressed: " << event->key() << std::endl;
-
-    if (event->key() == Qt::Key_Escape) {
-        std::cout << "Escape key pressed" << std::endl;
-        close();  // Fermer la fenêtre si la touche Échap est pressée
-    }
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
-    // std::cout << "Mouse pressed: " << event->button() << std::endl;
+    std::cout << "Mouse pressed: " << event->button() << std::endl;
     m_camera->mousePressEvent(event);
-    // update();
+
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    // std::cout << "Mouse moved: " << event->pos().x() << ", " << event->pos().y() << std::endl;
+    std::cout << "Mouse moved: " << event->pos().x() << ", " << event->pos().y() << std::endl;
     m_camera->mouseMoveEvent(event);
-    // update();
+
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event)
 {
-    // std::cout << "Wheel moved: " << event->angleDelta().y() << std::endl;
+    std::cout << "Wheel moved: " << event->angleDelta().y() << std::endl;
     m_camera->wheelEvent(event);
-    // update();
 
 }
