@@ -42,6 +42,7 @@ void Camera::keyPressEvent(QKeyEvent *event)
 
 void Camera::mousePressEvent(QMouseEvent *event)
 {   
+    std::cout << "Mouse pressed" << std::endl;
     m_lastMousePos = event->pos();
     m_mousePressed = true;
 }

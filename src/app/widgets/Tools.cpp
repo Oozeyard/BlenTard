@@ -32,3 +32,7 @@ void ToolBar::paintEvent(QPaintEvent *event) {
     }
 
 }
+
+void ToolBar::mousePressEvent(QMouseEvent *event) {
+    std::cout << "Mouse pressed on toolbar" << std::endl;
+}

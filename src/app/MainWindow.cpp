@@ -13,21 +13,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QWidget *rightContainer = new QWidget(this);
     QVBoxLayout *rightLayout = new QVBoxLayout(rightContainer);
 
-    QWidget *glContainer = new QWidget(this);
-    QStackedLayout *glLayout = new QStackedLayout(glContainer);
-    glLayout->setStackingMode(QStackedLayout::StackAll);
-
-    // ToolBar
-    ToolBar *toolBar = new ToolBar(this);
-    toolBar->addTool(Tool("Move", QIcon("src/app/icons/light_krita_tool_move.svg")));
-    toolBar->addTool(Tool("Rectangle", QIcon("src/app/icons/light_krita_tool_rectangle.svg")));
-    glLayout->addWidget(toolBar);
-
     // GLWidget
     glWidget = new GLWidget(this);
-    glLayout->addWidget(glWidget);
+    splitter->addWidget(glWidget);
 
-    splitter->addWidget(glContainer);
+    // ToolBar
+    ToolBar *toolBar = new ToolBar(glWidget);
+    toolBar->addTool(Tool("Move", QIcon("src/app/icons/light_krita_tool_move.svg")));
+    toolBar->addTool(Tool("Rectangle", QIcon("src/app/icons/light_krita_tool_rectangle.svg")));
+    toolBar->move(10, 30);
+    toolBar->setFixedSize(40, 50*toolBar->GetToolsSize());
 
     // Hierarchy
     Hierarchy *hierarchy = new Hierarchy(this);

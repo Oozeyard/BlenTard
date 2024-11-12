@@ -8,6 +8,7 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QPainterPath>
+#include <iostream>
 
 class Tool {
 
@@ -35,10 +36,11 @@ class ToolBar : public QWidget {
 public:
     explicit ToolBar(QWidget *parent = nullptr);
     void addTool(Tool tool) {tools.push_back(tool);}
+    int GetToolsSize() {return tools.size();}
     void addSeparator();
 
     // Events
-    //void mousePressEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
     //void mouseReleaseEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override; // paint own widget
 
