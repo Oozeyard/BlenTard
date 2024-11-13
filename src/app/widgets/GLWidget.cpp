@@ -12,6 +12,8 @@ GLWidget::~GLWidget()
         return;
     makeCurrent();
     delete m_program;
+    delete m_programGridOverlay;
+    delete m_gridOverlay;
     delete m_mesh;
     delete m_camera;
     doneCurrent();
@@ -29,7 +31,6 @@ QSize GLWidget::sizeHint() const
 
 void GLWidget::initShaders(QOpenGLShaderProgram *program, std::string vertex_shader, std::string fragment_shader)
 {
-
     if (!program->addShaderFromSourceFile(QOpenGLShader::Vertex, vertex_shader.c_str())) {
         qWarning() << "Error when compiling the vertex shader:" << program->log();
     }
@@ -43,42 +44,6 @@ void GLWidget::initShaders(QOpenGLShaderProgram *program, std::string vertex_sha
     }
 }
 
-void GLWidget::drawGrid(float gridSize, int divisions)
-{
-    // Activer les fonctionnalités OpenGL nécessaires
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // Couleur et largeur des lignes
-    QColor mainColor(255, 255, 255, 128);   // Lignes principales
-    QColor subColor(255, 255, 255, 64);     // Lignes secondaires
-
-    float step = gridSize / divisions;
-
-    glBegin(GL_LINES);
-
-    // Lignes de la grille principale
-    for (int i = -divisions; i <= divisions; ++i) {
-        if (i % 10 == 0) {
-            glColor4f(mainColor.redF(), mainColor.greenF(), mainColor.blueF(), mainColor.alphaF());
-        } else {
-            glColor4f(subColor.redF(), subColor.greenF(), subColor.blueF(), subColor.alphaF());
-        }
-
-        // Lignes verticales
-        glVertex3f(i * step, 0, -gridSize);
-        glVertex3f(i * step, 0, gridSize);
-
-        // Lignes horizontales
-        glVertex3f(-gridSize, 0, i * step);
-        glVertex3f(gridSize, 0, i * step);
-    }
-
-    glEnd();
-
-    glDisable(GL_BLEND);
-}
-
 
 void GLWidget::initializeGL()
 {
@@ -86,25 +51,20 @@ void GLWidget::initializeGL()
 
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);  // Fond noir
 
-    
-    // Create a new shader program
+    // Create the principal shader program
     m_program = new QOpenGLShaderProgram;
-
     initShaders(m_program, "./src/shaders/vertex_shader.glsl", "./src/shaders/fragment_shader.glsl");
+
+    // Create the grid overlay shader program
+    m_programGridOverlay = new QOpenGLShaderProgram;
+    initShaders(m_programGridOverlay, "./src/shaders/vertex_shader_grid_overlay.glsl", "./src/shaders/fragment_shader_grid_overlay.glsl");
     
+    m_gridOverlay = new GridOverlay();
+
     m_mesh = new Mesh();
     m_camera = new Camera("MainCamera");
 
-    m_model.setToIdentity();
-    // m_model.rotate(65.0f, 54.0f, 84.0f, 1.0f);
-    m_view.setToIdentity();
-    // m_view.translate(0.0f, 0.0f, -5.0f);
-
-
-    // m_program->release();
-
 }
-
 
 void GLWidget::paintGL()
 {
@@ -112,45 +72,26 @@ void GLWidget::paintGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
+    // m_camera->computeView(m_view, m_projection);
 
-    /* // Couleur du triangle
-    glColor3f(1.0f, 0.0f, 0.0f);  // Rouge
-
-    // Dessiner un triangle
-    glBegin(GL_TRIANGLES);
-        glVertex3f(-0.5f, -0.5f, -1.0f);  // Sommet 1
-        glVertex3f( 0.5f, -0.5f, -1.0f);  // Sommet 2
-        glVertex3f( 0.0f,  0.5f, -1.0f);  // Sommet 3
-    glEnd();
-
-    glFlush(); */
-
-    m_program->bind();
-
-    drawGrid();
-    m_camera->computeView(m_view, m_projection);
-
-    m_program->setUniformValue("projection", m_projection);
-    m_program->setUniformValue("view", m_view);
-    m_program->setUniformValue("model", m_model);
-
+    
     // light
+    m_program->bind();
     m_program->setUniformValue("ligth_position", m_camera->transform.position);
     m_program->setUniformValue("ligth_direction", m_camera->getFront());
-
-    m_mesh->draw(m_program);
-    update();
-
     m_program->release();
 
+    m_mesh->draw(m_program, m_camera);
+    m_gridOverlay->draw(m_programGridOverlay, m_camera);
+
+    update();
 }
 
 
 void GLWidget::resizeGL(int w, int h)
 {
     glViewport(0, 0, w, h);  // Viewport
-
-    m_projection = m_camera->getProjectionMatrix();
+    m_camera->setAspect(static_cast<float>(w) / static_cast<float>(h));
 }
 
 void GLWidget::keyPressEvent(QKeyEvent *event)

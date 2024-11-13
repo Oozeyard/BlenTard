@@ -5,6 +5,7 @@ Camera::Camera(const QString& name, Node *parent) :
 {
     transform.position = QVector3D(0.0f, 5.0f, 10.0f);
     init();
+    computeView(m_viewMatrix, m_projectionMatrix);
 }
 
 Camera::Camera(const QString& name, QVector3D position, QVector3D target, Node *parent) : 
@@ -13,6 +14,7 @@ Camera::Camera(const QString& name, QVector3D position, QVector3D target, Node *
 {
     init();
     transform.position = position;
+    computeView(m_viewMatrix, m_projectionMatrix);
 
 }
 
@@ -46,7 +48,6 @@ void Camera::keyPressEvent(QKeyEvent *event)
 
 void Camera::mousePressEvent(QMouseEvent *event)
 {   
-    std::cout << "Mouse pressed" << std::endl;
     m_lastMousePos = event->pos();
     m_mousePressed = true;
 }
@@ -83,13 +84,13 @@ void Camera::mouseMoveEvent(QMouseEvent *event)
 
         m_lastMousePos = event->pos();
     }
-
+    computeView(m_viewMatrix, m_projectionMatrix);
 
 }
 
 void Camera::wheelEvent(QWheelEvent *event)
 {
-    float delta = glm::clamp((float)event->angleDelta().y(), -120.0f, 120.0f) / 120.0f; // Normalize to -1, 0, or 1
+    float delta = qBound(-120.0f, (float)event->angleDelta().y(), 120.0f) / 120.0f; // Normalize to -1, 0, or 1
     float distance = (transform.position - m_target).length();
     distance *= (1.0f - delta * m_zoomSpeed);  // Adjust distance with zoom sensitivity
 
@@ -101,4 +102,6 @@ void Camera::wheelEvent(QWheelEvent *event)
     float maxDistance = 100.0f;
     if (distance < minDistance) distance = minDistance;
     if (distance > maxDistance) distance = maxDistance;
+
+    computeView(m_viewMatrix, m_projectionMatrix);
 }

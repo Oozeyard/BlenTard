@@ -12,6 +12,7 @@
 
 #include "Mesh.h"
 #include "Camera.h"
+#include "GridOverlay.h"
 
 #include <iostream>
 #include <string>
@@ -28,8 +29,6 @@ public:
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
 
-    Mesh *m_mesh;
-
 protected:
     void initializeGL() override;
     void paintGL() override;
@@ -41,20 +40,20 @@ protected:
 
 private:
     void initShaders(QOpenGLShaderProgram *program, std::string vertex_shader, std::string fragment_shader);
-    void drawGrid(float gridSize = 10.0f, int divisions = 10.0f);
-    void updateCamera();
+    void drawAxisOverlay(); // Draw axis overlay    
 
+    // Shaders
     QOpenGLShaderProgram *m_program;
+    QOpenGLShaderProgram *m_programGridOverlay;
 
-    QOpenGLVertexArrayObject m_vao; // Vertex Array Object
+    // Grid Overlay
+    GridOverlay *m_gridOverlay;
+
+    // Mesh
+    Mesh *m_mesh;
 
     // Camera 
     Camera *m_camera;
-
-    // Transformation matrix
-    QMatrix4x4 m_projection;
-    QMatrix4x4 m_view;
-    QMatrix4x4 m_model;
 
 };
 
