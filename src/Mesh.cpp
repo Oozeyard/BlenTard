@@ -1,6 +1,9 @@
 #include "Mesh.h"
 
-Mesh::Mesh(): m_vertexBuffer(QOpenGLBuffer::VertexBuffer), m_indexBuffer(QOpenGLBuffer::IndexBuffer) 
+Mesh::Mesh(const QString& name, Node *parent) : 
+    Node(name, parent),
+    m_vertexBuffer(QOpenGLBuffer::VertexBuffer), 
+    m_indexBuffer(QOpenGLBuffer::IndexBuffer) 
 {
     initializeOpenGLFunctions();
 
@@ -184,7 +187,7 @@ void Mesh::setMesh(std::string filename)
     m_indexBuffer.allocate(m_indices.data(), m_indices.size() * sizeof(GLushort));
 }
 
-void Mesh::draw(QOpenGLShaderProgram *program, Camera *camera) 
+void Mesh::draw(QOpenGLShaderProgram *program) 
 {
     // Tell OpenGL which VBOs to use
     program->bind();
@@ -192,9 +195,12 @@ void Mesh::draw(QOpenGLShaderProgram *program, Camera *camera)
     m_vertexBuffer.bind();
     m_indexBuffer.bind();
 
-    program->setUniformValue("projection", camera->getProjectionMatrix());
-    program->setUniformValue("view", camera->getViewMatrix());
-    program->setUniformValue("model", QMatrix4x4());
+    // if (parent() == nullptr) {
+    //     program->setUniformValue("model", transform.getModelMatrix());
+    // } else {
+    //     program->setUniformValue("model", qobject_cast<Node*>(parent())->transform.getModelMatrix() * transform.getModelMatrix());
+    // }
+
 
     program->enableAttributeArray(0);
     program->setAttributeBuffer(0, GL_FLOAT, 0, 3, 6 * sizeof(GLfloat));
@@ -204,9 +210,18 @@ void Mesh::draw(QOpenGLShaderProgram *program, Camera *camera)
 
     // Draw cube geometry using indices from VBO 1
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_SHORT, nullptr);
+
     
     m_vertexBuffer.release();
     m_indexBuffer.release();
     m_vao.release();
+
+    for (Node* child : m_children) {
+        // program->setUniformValue("model", transform.getModelMatrix() * child->transform.getModelMatrix());
+        child->draw(program);
+    }
+
+    
+    
     program->release();
 }

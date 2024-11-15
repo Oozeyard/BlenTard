@@ -3,7 +3,7 @@
 Camera::Camera(const QString& name, Node *parent) : 
     Node(name, parent)
 {
-    transform.position = QVector3D(0.0f, 5.0f, 10.0f);
+    transform.position = QVector3D(5.0f, -10.0f, 8.0f);
     init();
     computeView(m_viewMatrix, m_projectionMatrix);
 }
@@ -31,7 +31,8 @@ void Camera::init()
 void Camera::computeView(QMatrix4x4 &view, QMatrix4x4 &projection) 
 { 
     projection.setToIdentity();  
-    projection.perspective(m_fov, m_aspect, m_near, m_far);
+    if (m_isOrthographic) return;
+    else  projection.perspective(m_fov, m_aspect, m_near, m_far);
     m_projectionMatrix = projection;
 
     view.setToIdentity();
@@ -42,7 +43,11 @@ void Camera::computeView(QMatrix4x4 &view, QMatrix4x4 &projection)
 
 void Camera::keyPressEvent(QKeyEvent *event)
 {
-    std::cout << "Key pressed: " << event->key() << std::endl;
+    if (event->key() == 53) { // NUMPAD_5
+        std::cout << "Ortho" << std::endl;
+        m_isOrthographic = !m_isOrthographic;
+        computeView(m_viewMatrix, m_projectionMatrix);
+    }
 
 }
 

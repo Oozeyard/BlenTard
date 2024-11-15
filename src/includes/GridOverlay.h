@@ -14,7 +14,8 @@
 #include <cmath>
 
 
-class GridOverlay : protected QOpenGLFunctions {
+class GridOverlay : protected QOpenGLFunctions 
+{
 public:
     GridOverlay();
     ~GridOverlay();

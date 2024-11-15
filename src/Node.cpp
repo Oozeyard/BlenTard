@@ -15,6 +15,7 @@ void Node::addChild(Node* child)
 {
     if (child && !m_children.contains(child)) {
         m_children.append(child);
+        child->setParent(this);
         emit nodeChanged();
     }
 }
@@ -22,18 +23,9 @@ void Node::addChild(Node* child)
 void Node::removeChild(Node* child) 
 {
     if (m_children.removeOne(child)) {
+        child->setParent(nullptr);
         emit nodeChanged();
     }
-}
-
-QVector<Node*> Node::getChildren() const 
-{
-    return m_children;
-}
-
-QString Node::getName() const 
-{
-    return m_name;
 }
 
 void Node::setName(const QString& name) 
@@ -42,4 +34,23 @@ void Node::setName(const QString& name)
         m_name = name;
         emit nodeChanged();
     }
+}
+
+
+void Node::draw(QOpenGLShaderProgram *program) 
+{
+    if (!program) {
+        return;
+    }
+
+    // Set up the shader program
+    // program->bind();
+
+    // Draw children nodes
+    for (Node* child : m_children) {
+        // program->setUniformValue("model", transform.getModelMatrix() * child->transform.getModelMatrix());      
+        child->draw(program);
+    }
+
+    // program->release();
 }
