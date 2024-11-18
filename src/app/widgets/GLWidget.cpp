@@ -63,6 +63,7 @@ void GLWidget::initializeGL()
 
     m_mesh = new Mesh();
     m_camera = new Camera("MainCamera");
+    m_camera->setAspect(static_cast<float>(width()) / static_cast<float>(height()));
 
 }
 
