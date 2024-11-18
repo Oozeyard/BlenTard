@@ -48,6 +48,8 @@ private:
 
     Node *m_rootNode;
 
+    Model *m_mesh;
+
     // Camera 
     Camera *m_camera;
 

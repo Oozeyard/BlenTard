@@ -1,20 +1,16 @@
 #include "Model.h"
 
 Model::Model(const std::string &path) {
-    m_meshes.clear();
     loadModel(path);
-}
-
-Model::~Model() {
-    for (unsigned int i = 0; i < m_meshes.size(); i++)
-        delete m_meshes[i];
 }
 
 void Model::Draw(GLuint shaderProgram) {
     std::cout << "Drawing model" << std::endl;
     std::cout << "Number of meshes: " << m_meshes.size() << std::endl;
-    for (unsigned int i = 0; i < m_meshes.size(); i++)
-        m_meshes[i]->Draw(shaderProgram);
+    for (unsigned int i = 0; i < 5; i++) {
+        std::cout << "Mesh " << i << " has " << m_meshes[i].m_vertices.size() << " vertices" << std::endl;
+        m_meshes[i].Draw(shaderProgram);
+    }
 }
 
 void Model::loadModel(const std::string &path) {
@@ -31,19 +27,16 @@ void Model::loadModel(const std::string &path) {
 
 void Model::processNode(aiNode *node, const aiScene *scene) {
     for (unsigned int i = 0; i < node->mNumMeshes; i++) {
-        unsigned int meshIndex = node->mMeshes[i];
-        if (meshIndex < scene->mNumMeshes) {
-            aiMesh* mesh = scene->mMeshes[meshIndex];
-            std::cout << "Processing mesh " << meshIndex << std::endl;  // Debug log
-            m_meshes.push_back(processMesh(mesh, scene));
-        }
+        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+        std::cout << "Processing mesh " << node->mMeshes[i] << std::endl;  // Debug log
+        m_meshes.push_back(processMesh(mesh, scene));
     }
     for (unsigned int i = 0; i < node->mNumChildren; i++) {
         processNode(node->mChildren[i], scene);
     }
 }
 
-Mesh* Model::processMesh(aiMesh *mesh, const aiScene *scene) {
+Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
     std::vector<Texture> textures;
@@ -78,7 +71,7 @@ Mesh* Model::processMesh(aiMesh *mesh, const aiScene *scene) {
     textures.insert(textures.end(), roughnessMaps.begin(), roughnessMaps.end());
 
     std::cout<< "Number of vertices: " << vertices.size() << std::endl;
-    return new Mesh(vertices, indices, textures);
+    return Mesh(vertices, indices, textures);
 }
 
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName) {

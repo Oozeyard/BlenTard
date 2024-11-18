@@ -1,7 +1,7 @@
 #include "Mesh.h"
 
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
-    : vertices(vertices), indices(indices), textures(textures) {
+    : m_vertices(std::move(vertices)), m_indices(std::move(indices)), m_textures(std::move(textures)), VAO(new QOpenGLVertexArrayObject), VBO(new QOpenGLBuffer(QOpenGLBuffer::VertexBuffer)), EBO(new QOpenGLBuffer(QOpenGLBuffer::IndexBuffer)) {
     setupMesh();
 }
 
@@ -11,10 +11,10 @@ void Mesh::Draw(GLuint shaderProgram) {
     unsigned int metallicNr = 1;
     unsigned int roughnessNr = 1;
 
-    for (unsigned int i = 0; i < textures.size(); i++) {
+    for (unsigned int i = 0; i < m_textures.size(); i++) {
         glActiveTexture(GL_TEXTURE0 + i);
         std::string number;
-        std::string name = textures[i].type;
+        std::string name = m_textures[i].type;
         if (name == "texture_diffuse")
             number = std::to_string(diffuseNr++);
         else if (name == "texture_normal")
@@ -25,43 +25,44 @@ void Mesh::Draw(GLuint shaderProgram) {
             number = std::to_string(roughnessNr++);
 
         glUniform1i(glGetUniformLocation(shaderProgram, (name + number).c_str()), i);
-        glBindTexture(GL_TEXTURE_2D, textures[i].id);
+        glBindTexture(GL_TEXTURE_2D, m_textures[i].id);
     }
 
-    VAO.bind();
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-    VAO.release();
+    VAO->bind();
+    glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
+    VAO->release();
 
     glActiveTexture(GL_TEXTURE0);
 }
 
 void Mesh::setupMesh() {
-    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-    VAO.create();
-    VAO.bind();
+    initializeOpenGLFunctions();
+    VAO->create();
+    VBO->create();
+    EBO->create();
 
-    VBO.create();
-    VBO.bind();
-    VBO.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    VBO.allocate(vertices.data(), vertices.size() * sizeof(Vertex));
+    VAO->bind();
 
-    EBO.create();
-    EBO.bind();
-    EBO.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    EBO.allocate(indices.data(), indices.size() * sizeof(unsigned int));
+    VBO->bind();
+    VBO->setUsagePattern(QOpenGLBuffer::StaticDraw);
+    VBO->allocate(m_vertices.data(), m_vertices.size() * sizeof(Vertex));
 
-    f->glEnableVertexAttribArray(0);
-    f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-    f->glEnableVertexAttribArray(1);
-    f->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
-    f->glEnableVertexAttribArray(2);
-    f->glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
-    f->glEnableVertexAttribArray(3);
-    f->glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent));
-    f->glEnableVertexAttribArray(4);
-    f->glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitangent));
+    EBO->bind();
+    EBO->setUsagePattern(QOpenGLBuffer::StaticDraw);
+    EBO->allocate(m_indices.data(), m_indices.size() * sizeof(unsigned int));
 
-    VAO.release();
-    VBO.release();
-    EBO.release();
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent));
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, bitangent));
+
+    VAO->release();
+    VBO->release();
+    EBO->release();
 }

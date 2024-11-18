@@ -92,8 +92,8 @@ void GLWidget::initializeGL()
     initShaders(m_program, "./src/shaders/vertex_shader.glsl", "./src/shaders/fragment_shader.glsl");
     
     m_rootNode = new Node("RootNode");
-    Model swamp = Model("models/swamp-location/source/map_1.obj");
-    m_rootNode->setModel(&swamp);
+    m_mesh = new Model("models/swamp-location/source/map_1.obj");
+    m_rootNode->setModel(m_mesh);
     m_camera = new Camera("MainCamera");
 
     m_model.setToIdentity();
