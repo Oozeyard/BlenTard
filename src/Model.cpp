@@ -5,9 +5,8 @@ Model::Model(const std::string &path) {
 }
 
 void Model::Draw(GLuint shaderProgram) {
-    std::cout << "Drawing model" << std::endl;
     std::cout << "Number of meshes: " << m_meshes.size() << std::endl;
-    for (unsigned int i = 0; i < 5; i++) {
+    for (unsigned int i = 0; i < m_meshes.size(); i++) {
         std::cout << "Mesh " << i << " has " << m_meshes[i].m_vertices.size() << " vertices" << std::endl;
         m_meshes[i].Draw(shaderProgram);
     }

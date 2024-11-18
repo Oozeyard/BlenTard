@@ -91,9 +91,11 @@ void GLWidget::initializeGL()
 
     initShaders(m_program, "./src/shaders/vertex_shader.glsl", "./src/shaders/fragment_shader.glsl");
     
-    m_rootNode = new Node("RootNode");
+    //m_rootNode = new Node("RootNode");
     m_mesh = new Model("models/swamp-location/source/map_1.obj");
-    m_rootNode->setModel(m_mesh);
+    //m_mesh = new Model("models/indoor plant_02_+2.fbx");
+    //m_mesh = new Model("models/knightsword/source/KnightSword.fbx");
+    //m_rootNode->setModel(m_mesh);
     m_camera = new Camera("MainCamera");
 
     m_model.setToIdentity();
@@ -139,7 +141,8 @@ void GLWidget::paintGL()
     m_program->setUniformValue("ligth_position", m_camera->transform.position);
     m_program->setUniformValue("ligth_direction", m_camera->getFront());
 
-    m_rootNode->getModel()->Draw(m_program->programId());
+    //m_rootNode->getModel()->Draw(m_program->programId());
+    m_mesh->Draw(m_program->programId());
     update();
 
     m_program->release();
