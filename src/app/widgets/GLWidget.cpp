@@ -94,7 +94,6 @@ void GLWidget::initializeGL()
     //m_rootNode = new Node("RootNode");
     m_mesh = new Model("models/swamp-location/source/map_1.obj");
     //m_mesh = new Model("models/indoor plant_02_+2.fbx");
-    //m_mesh = new Model("models/knightsword/source/KnightSword.fbx");
     //m_rootNode->setModel(m_mesh);
     m_camera = new Camera("MainCamera");
 
@@ -138,8 +137,15 @@ void GLWidget::paintGL()
     m_program->setUniformValue("model", m_model);
 
     // light
-    m_program->setUniformValue("ligth_position", m_camera->transform.position);
-    m_program->setUniformValue("ligth_direction", m_camera->getFront());
+    float cutoff = glm::cos(glm::radians(12.5f));       // Angle interne
+    float outerCutoff = glm::cos(glm::radians(17.5f));  // Angle externe
+
+    m_program->setUniformValue("light_position", m_camera->transform.position);
+    m_program->setUniformValue("light_direction", m_camera->getFront());
+    m_program->setUniformValue("cutoff", cutoff);
+    m_program->setUniformValue("outerCutoff", outerCutoff);
+    m_program->setUniformValue("light_color", QVector3D(1.0, 1.0, 1.0)); // Blanc
+
 
     //m_rootNode->getModel()->Draw(m_program->programId());
     m_mesh->Draw(m_program->programId());
