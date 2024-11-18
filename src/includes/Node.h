@@ -5,6 +5,7 @@
 #include <QString>
 
 #include "Transform.h"
+#include "Model.h"
 
 class Node : public QObject 
 {
@@ -18,10 +19,13 @@ public:
 
     void addChild(Node* child);
     void removeChild(Node* child);
-    QVector<Node*> getChildren() const;
+    QVector<Node*> getChildren() const { return m_children; }
 
-    QString getName() const;
+    QString getName() const { return m_name; }
     void setName(const QString& name);
+
+    void setModel(Model *model) { m_model = model; }
+    Model* getModel() const { return m_model; }
 
 signals:
     void nodeChanged();
@@ -29,5 +33,5 @@ signals:
 private:
     QString m_name;
     QVector<Node*> m_children;
-
+    Model *m_model;
 };

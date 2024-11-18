@@ -8,7 +8,8 @@ Node::Node(const QString& name, QObject* parent)
 
 Node::~Node() 
 {
-    // Destructor implementation
+    delete m_model;
+    qDeleteAll(m_children);
 }
 
 void Node::addChild(Node* child) 
@@ -24,16 +25,6 @@ void Node::removeChild(Node* child)
     if (m_children.removeOne(child)) {
         emit nodeChanged();
     }
-}
-
-QVector<Node*> Node::getChildren() const 
-{
-    return m_children;
-}
-
-QString Node::getName() const 
-{
-    return m_name;
 }
 
 void Node::setName(const QString& name) 

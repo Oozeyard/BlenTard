@@ -10,7 +10,7 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 
-#include "Mesh.h"
+#include "Model.h"
 #include "Camera.h"
 
 #include <iostream>
@@ -27,8 +27,6 @@ public:
 
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
-
-    Mesh *m_mesh;
 
 protected:
     void initializeGL() override;
@@ -47,6 +45,8 @@ private:
     QOpenGLShaderProgram *m_program;
 
     QOpenGLVertexArrayObject m_vao; // Vertex Array Object
+
+    Node *m_rootNode;
 
     // Camera 
     Camera *m_camera;

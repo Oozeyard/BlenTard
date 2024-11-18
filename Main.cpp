@@ -14,6 +14,10 @@ int main(int argc, char* argv[]) {
         qWarning() << "Failed to load stylesheet";
     }
 
+    // Node system
+    Node root("Root", nullptr);
+    
+
     // Create main window
     MainWindow window;
     window.show();

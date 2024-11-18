@@ -10,7 +10,7 @@
 #include "Inspector.h"
 #include "Hierarchy.h"
 #include "Tools.h"
-#include "Mesh.h"
+#include "Model.h"
 
 class MainWindow : public QMainWindow {
  Q_OBJECT

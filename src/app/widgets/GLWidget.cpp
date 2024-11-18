@@ -12,7 +12,6 @@ GLWidget::~GLWidget()
         return;
     makeCurrent();
     delete m_program;
-    delete m_mesh;
     delete m_camera;
     doneCurrent();
 }
@@ -92,7 +91,9 @@ void GLWidget::initializeGL()
 
     initShaders(m_program, "./src/shaders/vertex_shader.glsl", "./src/shaders/fragment_shader.glsl");
     
-    m_mesh = new Mesh();
+    m_rootNode = new Node("RootNode");
+    Model swamp = Model("models/swamp-location/source/map_1.obj");
+    m_rootNode->setModel(&swamp);
     m_camera = new Camera("MainCamera");
 
     m_model.setToIdentity();
@@ -138,7 +139,7 @@ void GLWidget::paintGL()
     m_program->setUniformValue("ligth_position", m_camera->transform.position);
     m_program->setUniformValue("ligth_direction", m_camera->getFront());
 
-    m_mesh->draw(m_program);
+    m_rootNode->getModel()->Draw(m_program->programId());
     update();
 
     m_program->release();

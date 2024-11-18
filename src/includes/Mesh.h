@@ -1,29 +1,40 @@
 #pragma once
 
+#include <string>
+#include <vector>
 #include <QOpenGLFunctions>
-#include <QOpenGLShaderProgram>
+#include <QOpenGLContext>
+#include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
-#include <iostream>
-#include <fstream>
+#include <QVector3D>
+#include <QVector2D>
+#include <QOpenGLShaderProgram>
 
-class Mesh : protected QOpenGLFunctions 
-{
+struct Vertex {
+    QVector3D position;
+    QVector3D normal;
+    QVector2D texCoords;
+    QVector3D tangent;
+    QVector3D bitangent;
+};
+
+struct Texture {
+    unsigned int id;
+    std::string type;
+    std::string path;
+};
+
+class Mesh : protected QOpenGLFunctions {
 public:
-    Mesh();
-    ~Mesh();
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+    std::vector<Texture> textures;
 
-    void draw(QOpenGLShaderProgram *program);
-    void setMesh(std::string filename);
-    void openOFF( std::string const & filename,
-              std::vector<GLfloat> & m_vertices,
-              std::vector<GLushort> & m_indices,
-              bool load_normals = true );
-
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
+    void Draw(GLuint shaderProgram);
+    
 private:
-    void init();
-
-    std::vector<GLushort> m_indices;
-    std::vector<GLfloat> m_vertices;
-    QOpenGLBuffer m_vertexBuffer;
-    QOpenGLBuffer m_indexBuffer;
+    QOpenGLVertexArrayObject VAO;
+    QOpenGLBuffer VBO, EBO;
+    void setupMesh();
 };
