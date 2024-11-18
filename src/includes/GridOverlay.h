@@ -7,20 +7,19 @@
 #include <QMatrix4x4>
 #include <QVector3D>
 
-#include "Camera.h"
-
 #include <iostream>
 #include <vector>
 #include <cmath>
 
 
-class GridOverlay : protected QOpenGLFunctions {
+class GridOverlay : protected QOpenGLFunctions 
+{
 public:
     GridOverlay();
     ~GridOverlay();
 
     void setupGrid(float size = 10.0f, float step = 1.0f);  
-    void draw(QOpenGLShaderProgram *program, Camera *camera);
+    void draw(QOpenGLShaderProgram *program);
 
 private:
     QOpenGLVertexArrayObject m_gridVAO;

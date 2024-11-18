@@ -5,18 +5,20 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLBuffer>
 
+#include "Node.h"
 #include "Camera.h"
 
 #include <iostream>
 #include <fstream>
 
-class Mesh : protected QOpenGLFunctions 
+class Mesh : public Node, protected QOpenGLFunctions 
 {
+    Q_OBJECT
 public:
-    Mesh();
+    explicit Mesh(const QString& name, Node *parent = nullptr);
     ~Mesh();
 
-    void draw(QOpenGLShaderProgram *program, Camera *camera);
+    void draw(QOpenGLShaderProgram *program);
     void setMesh(std::string filename);
     void openOFF( std::string const & filename,
               std::vector<GLfloat> & m_vertices,
@@ -28,6 +30,7 @@ private:
 
     std::vector<GLushort> m_indices;
     std::vector<GLfloat> m_vertices;
+
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vertexBuffer;
     QOpenGLBuffer m_indexBuffer;

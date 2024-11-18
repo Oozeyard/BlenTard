@@ -13,8 +13,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QWidget *rightContainer = new QWidget(this);
     QVBoxLayout *rightLayout = new QVBoxLayout(rightContainer);
 
-    // GLWidget
-    glWidget = new GLWidget(this);
+    // OpenGL Widget Main Scene
+    GLWidget *glWidget = new GLWidget(this);
     splitter->addWidget(glWidget);
 
     // ToolBar
@@ -26,8 +26,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     // Hierarchy
     Hierarchy *hierarchy = new Hierarchy(this);
-    hierarchy->addObject("Cube");
-    hierarchy->addObject("Camera");
+    connect(glWidget, &GLWidget::rootNodeCreated, hierarchy, &Hierarchy::setRootNode);
+    // hierarchy->addObject("Cube");
+    // hierarchy->addObject("Camera");
 
     // Inspector
     Inspector *inspector = new Inspector(this);

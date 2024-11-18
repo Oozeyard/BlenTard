@@ -15,7 +15,7 @@
 
 
 // CONSTANTS
-const QVector3D WORLD_UP = QVector3D(0.0f, 1.0f, 0.0f);
+const QVector3D WORLD_UP = QVector3D(0.0f, 0.0f, 1.0f);
 
 class Camera : public Node
 {
@@ -55,11 +55,11 @@ private:
 
     // Parameters
     QVector3D m_target   { QVector3D(0.0f, 0.0f, 0.0f) };
-    QVector3D m_front    { QVector3D(0.0f, 0.0f, -1.0f) };
-    float m_fov     { 45.0f };
+    QVector3D m_front    { QVector3D(0.0f, -1.0f, 0.0f) };
+    float m_fov     { 50.0f };
     float m_aspect  { 4.0f / 3.0f };
     float m_near    { 0.01f };
-    float m_far     { 100.0f };
+    float m_far     { 1000.0f };
 
     // View
     QMatrix4x4 m_viewMatrix;
@@ -73,4 +73,5 @@ private:
     float m_mouseSensitivity    { 0.05f };
     float m_zoomSpeed           { 0.05f };
 
+    bool m_isOrthographic       { false };
 };

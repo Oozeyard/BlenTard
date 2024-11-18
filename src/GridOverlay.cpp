@@ -26,15 +26,15 @@ void GridOverlay::setupGrid(float size, float step)
     bool toggle = false;
     for (float i = -size; i <= size; i += subStep)
     {
-        vertices.push_back(QVector3D(i, 0.0f, -size));
-        vertices.push_back(QVector3D(i, 0.0f, size));
-        vertices.push_back(QVector3D(-size, 0.0f, i));
-        vertices.push_back(QVector3D(size, 0.0f, i));
+        vertices.push_back(QVector3D(i, -size, 0.0f));
+        vertices.push_back(QVector3D(i, size, 0.0f));
+        vertices.push_back(QVector3D(-size, i, 0.0f));
+        vertices.push_back(QVector3D(size, i, 0.0f));
         if (i == 0) {
-            colors.push_back(QVector3D(1, 0, 0));
-            colors.push_back(QVector3D(1, 0, 0));
             colors.push_back(QVector3D(0, 1, 0));
             colors.push_back(QVector3D(0, 1, 0));
+            colors.push_back(QVector3D(1, 0, 0));
+            colors.push_back(QVector3D(1, 0, 0));
         } else if (toggle) {
             colors.push_back(QVector3D(0.4, 0.4, 0.4));
             colors.push_back(QVector3D(0.4, 0.4, 0.4));
@@ -58,13 +58,10 @@ void GridOverlay::setupGrid(float size, float step)
 
 }
 
-void GridOverlay::draw(QOpenGLShaderProgram *program, Camera *camera)
+void GridOverlay::draw(QOpenGLShaderProgram *program)
 {
     program->bind();
     m_gridVAO.bind();
-
-    program->setUniformValue("projection", camera->getProjectionMatrix());
-    program->setUniformValue("view", camera->getViewMatrix());
 
     program->enableAttributeArray(0);
     m_gridVBO.bind();

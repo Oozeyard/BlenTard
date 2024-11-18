@@ -9,7 +9,7 @@ uniform mat4 projection;
 out vec3 Normal;
 
 void main() {
-    Normal = normal;
+    Normal = mat3(transpose(inverse(model))) * normal;
     gl_Position = projection * view * model * vec4(position, 1.0);
 
 }

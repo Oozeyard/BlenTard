@@ -29,6 +29,9 @@ public:
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
 
+signals:
+    void rootNodeCreated(Node *rootNode); // Signal pour envoyer la Node racine
+
 protected:
     void initializeGL() override;
     void paintGL() override;
@@ -49,8 +52,8 @@ private:
     // Grid Overlay
     GridOverlay *m_gridOverlay;
 
-    // Mesh
-    Mesh *m_mesh;
+    Node *m_rootNode;
+    Mesh *mesh; // test
 
     // Camera 
     Camera *m_camera;

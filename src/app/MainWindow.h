@@ -6,11 +6,14 @@
 #include <QTextStream>
 #include <QMenuBar>
 #include <QStackedLayout>
+
 #include "GLWidget.h"
 #include "Inspector.h"
 #include "Hierarchy.h"
 #include "Tools.h"
 #include "Mesh.h"
+
+#include <iostream>
 
 class MainWindow : public QMainWindow {
  Q_OBJECT
@@ -21,5 +24,5 @@ public:
 
 private:
    void InitMenuBar();
-   GLWidget *glWidget;
+   // GLWidget *glWidget;
 };
