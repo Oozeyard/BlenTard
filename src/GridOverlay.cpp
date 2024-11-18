@@ -58,13 +58,10 @@ void GridOverlay::setupGrid(float size, float step)
 
 }
 
-void GridOverlay::draw(QOpenGLShaderProgram *program, Camera *camera)
+void GridOverlay::draw(QOpenGLShaderProgram *program)
 {
     program->bind();
     m_gridVAO.bind();
-
-    program->setUniformValue("projection", camera->getProjectionMatrix());
-    program->setUniformValue("view", camera->getViewMatrix());
 
     program->enableAttributeArray(0);
     m_gridVBO.bind();

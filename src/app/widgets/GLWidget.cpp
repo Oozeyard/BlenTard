@@ -91,7 +91,11 @@ void GLWidget::paintGL()
     m_program->setUniformValue("ligth_direction", m_camera->getFront());
     m_program->release();
 
-    m_gridOverlay->draw(m_programGridOverlay, m_camera);
+    m_programGridOverlay->bind();
+    m_programGridOverlay->setUniformValue("projection", m_camera->getProjectionMatrix());
+    m_programGridOverlay->setUniformValue("view", m_camera->getViewMatrix());
+    m_gridOverlay->draw(m_programGridOverlay);
+    m_programGridOverlay->release();
 
     m_program->bind();
     m_program->setUniformValue("projection", m_camera->getProjectionMatrix());
