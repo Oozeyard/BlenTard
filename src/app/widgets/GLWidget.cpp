@@ -83,8 +83,6 @@ void GLWidget::paintGL()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
-    // m_camera->computeView(m_view, m_projection);
-
     
     // light
     m_program->bind();

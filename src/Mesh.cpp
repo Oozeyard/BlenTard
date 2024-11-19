@@ -195,11 +195,11 @@ void Mesh::draw(QOpenGLShaderProgram *program)
     m_vertexBuffer.bind();
     m_indexBuffer.bind();
 
-    // if (parent() == nullptr) {
-    //     program->setUniformValue("model", transform.getModelMatrix());
-    // } else {
-    //     program->setUniformValue("model", qobject_cast<Node*>(parent())->transform.getModelMatrix() * transform.getModelMatrix());
-    // }
+    if (parent() == nullptr) {
+        program->setUniformValue("model", transform.getModelMatrix());
+    } else {
+        program->setUniformValue("model", qobject_cast<Node*>(parent())->transform.getModelMatrix() * transform.getModelMatrix());
+    }
 
 
     program->enableAttributeArray(0);

@@ -5,7 +5,7 @@ GridOverlay::GridOverlay(QOpenGLShaderProgram *program) :
     m_gridColorVBO(QOpenGLBuffer::VertexBuffer),
     m_program(program)
 {
-    // initializeOpenGLFunctions();
+    initializeOpenGLFunctions();
 
     m_gridVAO.create();
     m_gridVBO.create();
@@ -86,9 +86,11 @@ void GridOverlay::draw()
 
     m_program->bind();
     m_gridVAO.bind();
+    m_gridVBO.bind();
 
     glDrawArrays(GL_LINES, 0, m_gridVBO.size() / sizeof(QVector3D));
 
+    m_gridVBO.release();
     m_gridVAO.release();
     m_program->release();   
 }

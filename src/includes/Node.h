@@ -19,8 +19,6 @@ public:
 
     Transform transform; // Each node have a transform
 
-    void setParent(Node* parent) { setParent(parent); }
-
     void addChild(Node* child);
     void removeChild(Node* child);
     QVector<Node*> getChildren() const { return m_children; }
