@@ -15,16 +15,22 @@
 class GridOverlay : protected QOpenGLFunctions 
 {
 public:
-    GridOverlay();
+    GridOverlay(QOpenGLShaderProgram *program);
     ~GridOverlay();
 
     void setupGrid(float size = 10.0f, float step = 1.0f);  
-    void draw(QOpenGLShaderProgram *program);
+    void draw();
+
+    void setEnabled(bool enabled);
+    bool isEnabled() const;
 
 private:
     QOpenGLVertexArrayObject m_gridVAO;
     QOpenGLBuffer m_gridVBO;
     QOpenGLBuffer m_gridColorVBO;
 
+    QOpenGLShaderProgram *m_program;
+
     float m_gridScale { 50.0f };
+    bool m_enabled { true };
 };

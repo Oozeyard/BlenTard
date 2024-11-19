@@ -1,9 +1,11 @@
 #include "GridOverlay.h"
 
-GridOverlay::GridOverlay() : 
-    m_gridVBO(QOpenGLBuffer::VertexBuffer)
+GridOverlay::GridOverlay(QOpenGLShaderProgram *program) : 
+    m_gridVBO(QOpenGLBuffer::VertexBuffer),
+    m_gridColorVBO(QOpenGLBuffer::VertexBuffer),
+    m_program(program)
 {
-    initializeOpenGLFunctions();
+    // initializeOpenGLFunctions();
 
     m_gridVAO.create();
     m_gridVBO.create();
@@ -16,6 +18,16 @@ GridOverlay::~GridOverlay()
     m_gridVAO.destroy();
     m_gridVBO.destroy();
     m_gridColorVBO.destroy();
+}
+
+void GridOverlay::setEnabled(bool enabled)
+{
+    m_enabled = enabled;
+}
+
+bool GridOverlay::isEnabled() const
+{
+    return m_enabled;
 }
 
 void GridOverlay::setupGrid(float size, float step)
@@ -50,31 +62,33 @@ void GridOverlay::setupGrid(float size, float step)
     }
 
     m_gridVAO.bind();
+
     m_gridVBO.bind();
     m_gridVBO.allocate(vertices.data(), vertices.size() * sizeof(QVector3D));
+    m_program->enableAttributeArray(0);
+    m_program->setAttributeBuffer(0, GL_FLOAT, 0, 3, sizeof(QVector3D));
+    m_gridVBO.release();
 
     m_gridColorVBO.bind();
     m_gridColorVBO.allocate(colors.data(), colors.size() * sizeof(QVector3D));
+    m_program->enableAttributeArray(1);
+    m_program->setAttributeBuffer(1, GL_FLOAT, 0, 3, sizeof(QVector3D));
+    m_gridColorVBO.release();
+    m_gridVAO.release();
 
 }
 
-void GridOverlay::draw(QOpenGLShaderProgram *program)
+
+void GridOverlay::draw()
 {
-    program->bind();
+    if (!m_enabled)
+        return;
+
+    m_program->bind();
     m_gridVAO.bind();
-
-    program->enableAttributeArray(0);
-    m_gridVBO.bind();
-    program->setAttributeBuffer(0, GL_FLOAT, 0, 3, sizeof(QVector3D));
-
-    program->enableAttributeArray(1);
-    m_gridColorVBO.bind();
-    program->setAttributeBuffer(1, GL_FLOAT, 0, 3, sizeof(QVector3D));
 
     glDrawArrays(GL_LINES, 0, m_gridVBO.size() / sizeof(QVector3D));
 
-    m_gridVBO.release();
-    m_gridColorVBO.release();
     m_gridVAO.release();
-    program->release();
+    m_program->release();   
 }

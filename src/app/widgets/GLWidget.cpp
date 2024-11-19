@@ -62,7 +62,7 @@ void GLWidget::initializeGL()
     // Create the grid overlay shader program
     m_programGridOverlay = new QOpenGLShaderProgram;
     initShaders(m_programGridOverlay, "./src/shaders/vertex_shader_grid_overlay.glsl", "./src/shaders/fragment_shader_grid_overlay.glsl");
-    m_gridOverlay = new GridOverlay();
+    m_gridOverlay = new GridOverlay(m_programGridOverlay);
 
     m_camera = new Camera("MainCamera");
     m_camera->setAspect(static_cast<float>(width()) / static_cast<float>(height()));
@@ -95,7 +95,7 @@ void GLWidget::paintGL()
     m_programGridOverlay->bind();
     m_programGridOverlay->setUniformValue("projection", m_camera->getProjectionMatrix());
     m_programGridOverlay->setUniformValue("view", m_camera->getViewMatrix());
-    m_gridOverlay->draw(m_programGridOverlay);
+    m_gridOverlay->draw();
     m_programGridOverlay->release();
 
     m_program->bind();

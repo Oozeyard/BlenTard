@@ -13,7 +13,7 @@ TARGET = BlenTard
 MOC_DIR = ./tmp/moc
 OBJECTS_DIR = ./tmp/obj
 
-SOURCES += main.cpp \
+SOURCES += Main.cpp \
     src/app/MainWindow.cpp \
     src/app/widgets/GLWidget.cpp \
     src/app/widgets/Inspector.cpp \
