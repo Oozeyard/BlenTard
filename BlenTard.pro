@@ -25,7 +25,6 @@ SOURCES += Main.cpp \
     src/Model.cpp \
     src/Camera.cpp \
     src/GridOverlay.cpp \
-    src/Select.cpp \
     libs/stb_image.cpp
 
 HEADERS += src/app/MainWindow.h \
@@ -40,19 +39,19 @@ HEADERS += src/app/MainWindow.h \
     src/includes/Model.h \
     src/includes/Camera.h \
     src/includes/GridOverlay.h \
-    src/includes/Select.h \
-    libs/stb_image.h
+    libs/stb_image.h 
 
 INCLUDEPATH += ./libs/glm-0.9.7.1 \
+    ./libs/assimp-5.4.3/include \
     ./libs \
     ./src \
     ./src/app \
     ./src/app/widgets \
     ./src/shaders \
-    ./src/includes 
-#     ./libs/assimp-5.4.3/include \
+    ./src/includes \
+    ./libs/assimp-5.4.3/include 
 
-LIBS += -lassimp
+LIBS += -L./libs/assimp-5.4.3/bin -lassimp
 
 
 unix: LIBS += -lGL -ldl -lpthread
