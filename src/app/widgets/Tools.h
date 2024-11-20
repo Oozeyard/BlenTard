@@ -25,11 +25,18 @@ public:
 
     QString getName() {return name;}
     QIcon getIcon() {return icon;}
+    QVector<Tool> getSubTools() {return subTools;}
 
+    void setSubToolsVisibility() {isSubToolsVisible = !isSubToolsVisible;}
+    bool getSubToolsVisibility() {return isSubToolsVisible;}
+
+    QString getToolDescription() {return toolDescription;}
 private:
     QString name;
     QIcon icon;
     QVector<Tool> subTools;
+    bool isSubToolsVisible = false;
+    QString toolDescription = "Not available";
 };
 
 class ToolBar : public QWidget {
@@ -41,7 +48,8 @@ public:
     int GetToolsSize() {return tools.size();}
     void addSeparator();
 
-    Tool getToolAt(const QPoint &pos) const;
+    Tool* getSelectedTool() {return selectedTool;}
+    void setSelectedTool(Tool *tool);
 
     // Events
     void mousePressEvent(QMouseEvent *event) override;
@@ -50,4 +58,8 @@ public:
 
 private:
     QVector<Tool> tools;
+    Tool *selectedTool = nullptr;
+
+signals:
+    void toolSelected(Tool *tool);
 };

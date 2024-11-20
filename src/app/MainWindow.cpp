@@ -21,11 +21,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     splitter->addWidget(glWidget);
 
     // ToolBar
-    ToolBar *toolBar = new ToolBar(glWidget);
-    toolBar->addTool(Tool("Move", QIcon("src/app/icons/light_krita_tool_move.svg")));
-    toolBar->addTool(Tool("Rectangle", QIcon("src/app/icons/light_krita_tool_rectangle.svg")));
+    toolBar = new ToolBar(glWidget);
+    InitTools();       
     toolBar->move(10, 30);
-    toolBar->setFixedSize(40, 50*toolBar->GetToolsSize());
+    toolBar->setFixedSize(90, 50*(toolBar->GetToolsSize() + 10));
 
     // Hierarchy
     Hierarchy *hierarchy = new Hierarchy(this);
@@ -34,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // hierarchy->addObject("Camera");
 
     // Inspector
-    Inspector *inspector = new Inspector(this);
+    Inspector *inspector = new Inspector(this, toolBar);
     
     rightLayout->addWidget(hierarchy);
     rightLayout->addWidget(inspector);
@@ -50,6 +49,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 }
 
 MainWindow::~MainWindow() {}
+
+void MainWindow::InitTools() {
+    Tool move = Tool("Move", QIcon("src/app/icons/move.svg"));
+    toolBar->addTool(move);
+
+    // Selection
+    Tool select = Tool("Select", QIcon("src/app/icons/select/select_set.svg"));
+    Tool rectangleSelect = Tool("Rectangle Select", QIcon("src/app/icons/select/rectangle_select.svg"));
+    Tool circleSelect = Tool("Circle Select", QIcon("src/app/icons/select/circle_select.svg"));
+    Tool vertexSelect = Tool("Vertex Select", QIcon("src/app/icons/select/vertex_select.svg"));
+    Tool faceSelect = Tool("Face Select", QIcon("src/app/icons/select/face_select.svg"));
+    select.addSubTool(rectangleSelect);
+    select.addSubTool(circleSelect);
+    select.addSubTool(vertexSelect);
+    select.addSubTool(faceSelect);
+    toolBar->addTool(select);
+
+}
 
 void MainWindow::InitMenuBar() {
     QMenuBar *menuBar = new QMenuBar(this);

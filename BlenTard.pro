@@ -19,25 +19,23 @@ SOURCES += Main.cpp \
     src/app/widgets/Inspector.cpp \
     src/app/widgets/Hierarchy.cpp \
     src/app/widgets/Tools.cpp \
+    src/app/widgets/Context.cpp \
     src/Node.cpp \
     src/Mesh.cpp \
-    src/Model.cpp \
     src/Camera.cpp \
-    src/GridOverlay.cpp \
-    libs/stb_image.cpp 
+    src/GridOverlay.cpp
 
 HEADERS += src/app/MainWindow.h \
     src/app/widgets/GLWidget.h \
     src/app/widgets/Inspector.h \
     src/app/widgets/Hierarchy.h \
     src/app/widgets/Tools.h \
+    src/app/widgets/Context.h \
     src/includes/Transform.h \
     src/includes/Node.h \
-    src/includes/Mesh.h \
-    src/includes/Model.h \
+    src/includes/Mesh.h \    
     src/includes/Camera.h \
-    src/includes/GridOverlay.h \
-    libs/stb_image.h 
+    src/includes/GridOverlay.h 
 
 INCLUDEPATH += ./libs/glm-0.9.7.1 \
     ./libs/assimp-5.4.3/include \
@@ -45,10 +43,10 @@ INCLUDEPATH += ./libs/glm-0.9.7.1 \
     ./src/app \
     ./src/app/widgets \
     ./src/shaders \
-    ./src/includes \
-    ./libs
+    ./src/includes 
 
-LIBS += -L./libs/assimp-5.4.3/bin -lassimp
+# LIBS += -L./libs/assimp/bin -lassimp
+
 
 unix: LIBS += -lGL -ldl -lpthread
 win32: LIBS += -lopengl32 -lgdi32
