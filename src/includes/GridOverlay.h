@@ -31,6 +31,6 @@ private:
 
     QOpenGLShaderProgram *m_program;
 
-    float m_gridScale { 50.0f };
+    float m_gridScale { 100.0f };
     bool m_enabled { true };
 };

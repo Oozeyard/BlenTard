@@ -10,7 +10,7 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 
-#include "Mesh.h"
+#include "Model.h"
 #include "Camera.h"
 #include "GridOverlay.h"
 
@@ -52,8 +52,8 @@ private:
     // Grid Overlay
     GridOverlay *m_gridOverlay;
 
+    // Scene 
     Node *m_rootNode;
-    Mesh *mesh; // test
 
     // Camera 
     Camera *m_camera;

@@ -8,8 +8,11 @@ Node::Node(const QString& name, QObject* parent)
 
 Node::~Node() 
 {
-    // Destructor implementation
+    for (Node* child : m_children) {
+        delete child; // Libère la mémoire des enfants
+    }
 }
+
 
 void Node::addChild(Node* child) 
 {
@@ -48,7 +51,6 @@ void Node::draw(QOpenGLShaderProgram *program)
 
     // Draw children nodes
     for (Node* child : m_children) {
-        // program->setUniformValue("model", transform.getModelMatrix() * child->transform.getModelMatrix());      
         child->draw(program);
     }
 

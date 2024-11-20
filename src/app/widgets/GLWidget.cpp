@@ -67,12 +67,10 @@ void GLWidget::initializeGL()
     m_camera = new Camera("MainCamera");
     m_camera->setAspect(static_cast<float>(width()) / static_cast<float>(height()));
 
-    mesh = new Mesh("Cube1");
-    m_rootNode->addChild(mesh);
-    Mesh *mesh2 = new Mesh("Cube2");
-    mesh2->transform.translate(QVector3D(2.0f, 0.0f, 0.0f));
-    mesh2->transform.scaleBy(QVector3D(0.5f, 0.5f, 0.5f));
-    mesh->addChild(mesh2);
+    // Model* model = new Model("Map", "models/swamp-location/source/map_1.obj"); model->transform.rotate(QVector3D(90, 0, 0));
+    // Model* model = new Model("Cube", "models/cube.obj");
+    Model* model = new Model("Dragon", "models/fbx/Dragon 2.5_fbx.fbx");
+    m_rootNode->addChild(model);
 
     emit rootNodeCreated(m_rootNode);
 }
@@ -99,7 +97,6 @@ void GLWidget::paintGL()
     m_program->bind();
     m_program->setUniformValue("projection", m_camera->getProjectionMatrix());
     m_program->setUniformValue("view", m_camera->getViewMatrix());
-    mesh->transform.rotate(QVector3D(0.1f, 0.1f, 0.1f));
     m_rootNode->draw(m_program);
     m_program->release();
 

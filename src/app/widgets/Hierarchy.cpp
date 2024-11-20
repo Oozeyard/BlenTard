@@ -19,7 +19,7 @@ void Hierarchy::addObject(const QString &objectName)
 void Hierarchy::setRootNode(Node *node)
 {
     if (node) {
-        for (Node *child : node->getChildren()) {
+        for (Node* child : node->getChildren()) {
             addObject(child->getName());
             setRootNode(child);
         }
