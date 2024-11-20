@@ -12,7 +12,6 @@ GLWidget::GLWidget(QWidget *parent)
     connect(m_contextMenu, &Context::actionTriggered, this, [](const QString &actionName) {
         qDebug() << "Action triggered:" << actionName;
     });
-
 }
 
 GLWidget::~GLWidget()
@@ -148,4 +147,27 @@ void GLWidget::wheelEvent(QWheelEvent *event)
 
 void GLWidget::contextMenuEvent(QContextMenuEvent *event) {
     m_contextMenu->showContextMenu(event->globalPos());
+}
+
+void GLWidget::activateTool(Tool* tool) {
+    switch (tool->type)
+    {
+    case MOVE:
+        break;
+    case SELECT:
+        break;
+    case RECTANGLE_SELECT:
+        break;
+    case CIRCLE_SELECT:
+        break;
+    case VERTEX_SELECT:
+        break;
+    case FACE_SELECT:
+        break;
+    case ORTHOGRAPHIC:
+        m_camera->setOrthographic();
+        break;
+    default:
+        break;
+    }
 }

@@ -33,6 +33,7 @@ public:
     void setAspect(const float aspect) { m_aspect = aspect; computeView(m_viewMatrix, m_projectionMatrix); }
     void setNear(const float near) { m_near = near; computeView(m_viewMatrix, m_projectionMatrix); }
     void setFar(const float far) { m_far = far; computeView(m_viewMatrix, m_projectionMatrix); }
+    void setOrthographic() { m_isOrthographic = !m_isOrthographic; computeView(m_viewMatrix, m_projectionMatrix); }
 
     // Getters
     QVector3D getTarget() const { return m_target; }

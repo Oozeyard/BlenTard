@@ -14,6 +14,7 @@
 #include "Camera.h"
 #include "GridOverlay.h"
 #include "Context.h"
+#include "Tools.h"
 
 #include <iostream>
 #include <string>
@@ -30,9 +31,11 @@ public:
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
 
+public slots:
+    void activateTool(Tool* tool);
+
 signals:
     void rootNodeCreated(Node *rootNode); // Signal pour envoyer la Node racine
-
 protected:
     void initializeGL() override;
     void paintGL() override;

@@ -12,10 +12,21 @@
 
 #include <iostream>
 
+enum ToolType {
+    NONE,
+    MOVE,
+    SELECT,
+    RECTANGLE_SELECT,
+    CIRCLE_SELECT,
+    VERTEX_SELECT,
+    FACE_SELECT,
+    ORTHOGRAPHIC
+};
+
 class Tool {
 
 public:
-    Tool(QString name, QIcon icon) : name(name), icon(icon) {}
+    Tool(QString name, QIcon icon, ToolType type) : name(name), icon(icon), type(type) {}
     Tool() {}
 
     void addSubTool(Tool tool) {subTools.push_back(tool);}
@@ -31,6 +42,8 @@ public:
     bool getSubToolsVisibility() {return isSubToolsVisible;}
 
     QString getToolDescription() {return toolDescription;}
+
+    ToolType type = NONE;
 private:
     QString name;
     QIcon icon;

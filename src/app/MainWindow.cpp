@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     InitTools();       
     toolBar->move(10, 30);
     toolBar->setFixedSize(90, 50*(toolBar->GetToolsSize() + 10));
+    connect(toolBar, &ToolBar::toolSelected, glWidget, &GLWidget::activateTool);
 
     // Hierarchy
     Hierarchy *hierarchy = new Hierarchy(this);
@@ -51,21 +52,24 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 MainWindow::~MainWindow() {}
 
 void MainWindow::InitTools() {
-    Tool move = Tool("Move", QIcon("src/app/icons/move.svg"));
+    Tool move = Tool("Move", QIcon("src/app/icons/move.svg"), ToolType::MOVE);
     toolBar->addTool(move);
 
     // Selection
-    Tool select = Tool("Select", QIcon("src/app/icons/select/select_set.svg"));
-    Tool rectangleSelect = Tool("Rectangle Select", QIcon("src/app/icons/select/rectangle_select.svg"));
-    Tool circleSelect = Tool("Circle Select", QIcon("src/app/icons/select/circle_select.svg"));
-    Tool vertexSelect = Tool("Vertex Select", QIcon("src/app/icons/select/vertex_select.svg"));
-    Tool faceSelect = Tool("Face Select", QIcon("src/app/icons/select/face_select.svg"));
+    Tool select = Tool("Select", QIcon("src/app/icons/select/select_set.svg"), ToolType::SELECT);
+    Tool rectangleSelect = Tool("Rectangle Select", QIcon("src/app/icons/select/rectangle_select.svg"), ToolType::RECTANGLE_SELECT);
+    Tool circleSelect = Tool("Circle Select", QIcon("src/app/icons/select/circle_select.svg"), ToolType::CIRCLE_SELECT);
+    Tool vertexSelect = Tool("Vertex Select", QIcon("src/app/icons/select/vertex_select.svg"), ToolType::VERTEX_SELECT);
+    Tool faceSelect = Tool("Face Select", QIcon("src/app/icons/select/face_select.svg"), ToolType::FACE_SELECT);
     select.addSubTool(rectangleSelect);
     select.addSubTool(circleSelect);
     select.addSubTool(vertexSelect);
     select.addSubTool(faceSelect);
     toolBar->addTool(select);
 
+    // Caméra
+    Tool orthographic = Tool("Orthographic", QIcon("src/app/icons/view_ortho.svg"), ToolType::ORTHOGRAPHIC);
+    toolBar->addTool(orthographic);
 }
 
 void MainWindow::InitMenuBar() {
