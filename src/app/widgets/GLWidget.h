@@ -31,6 +31,8 @@ public:
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
 
+    void highlightNode(Node *node);
+
 public slots:
     void activateTool(Tool* tool);
 

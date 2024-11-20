@@ -28,13 +28,14 @@ public:
 
     virtual void draw(QOpenGLShaderProgram *program);
 
+    void setSelected();
+    bool isSelected() const { return m_selected; };
+
 signals:
     void nodeChanged();
 
 protected:
     QString m_name;
     QVector<Node*> m_children;
-
-    
-
+    bool m_selected = false;
 };

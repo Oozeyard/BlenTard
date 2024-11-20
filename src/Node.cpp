@@ -56,3 +56,10 @@ void Node::draw(QOpenGLShaderProgram *program)
 
     // program->release();
 }
+
+void Node::setSelected() {
+    m_selected = !m_selected;
+    for (Node* child : m_children) {
+        child->setSelected();
+    }
+}

@@ -6,6 +6,7 @@ struct Material {
 
 uniform Material material;
 uniform int numDiffuseTextures; // Number of diffuse textures
+uniform bool selected;
 
 in vec3 FragPos;
 in vec3 Normal;
@@ -23,6 +24,11 @@ void main() {
     // vec3 diffuse = diff * texture(texture_diffuse1, TexCoords).rgb;
 
     vec4 diffuseColor = vec4(0.0);
+
+    if (selected) {
+        FragColor = vec4(1.0, 0.5, 0.0, 1.0);
+        return;
+    }
 
     if (numDiffuseTextures == 0) {
         FragColor = vec4(diff * vec3(0.8, 0.8, 0.8), 1.0);

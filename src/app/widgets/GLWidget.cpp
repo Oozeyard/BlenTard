@@ -128,21 +128,18 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
 
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
-    std::cout << "Mouse pressed: " << event->button() << std::endl;
     m_camera->mousePressEvent(event);
 
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    std::cout << "Mouse moved: " << event->pos().x() << ", " << event->pos().y() << std::endl;
     m_camera->mouseMoveEvent(event);
 
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event)
 {
-    std::cout << "Wheel moved: " << event->angleDelta().y() << std::endl;
     m_camera->wheelEvent(event);
 
 }
@@ -155,6 +152,7 @@ void GLWidget::activateTool(Tool* tool) {
     switch (tool->type)
     {
     case MOVE:
+        
         break;
     case SELECT:
         break;
@@ -172,4 +170,8 @@ void GLWidget::activateTool(Tool* tool) {
     default:
         break;
     }
+}
+
+void GLWidget::highlightNode(Node *node) {
+    
 }

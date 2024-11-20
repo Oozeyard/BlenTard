@@ -90,6 +90,16 @@ void Mesh::draw(QOpenGLShaderProgram* program)
     
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
 
+    
+    if (m_selected) {
+        program->setUniformValue("selected", true);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glLineWidth(2.0f); 
+        glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, nullptr);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+    program->setUniformValue("selected", false);
+
     m_vertexBuffer.release();
     m_indexBuffer.release();
     m_vao.release();

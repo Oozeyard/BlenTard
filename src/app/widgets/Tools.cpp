@@ -8,7 +8,6 @@ ToolBar::ToolBar(QWidget *parent) : QWidget(parent) {
 }
 
 void ToolBar::paintEvent(QPaintEvent *event) {
-    std::cout << "Painting ToolBar" << std::endl;
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
