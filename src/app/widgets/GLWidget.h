@@ -13,6 +13,7 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "GridOverlay.h"
+#include "Context.h"
 
 #include <iostream>
 #include <string>
@@ -41,6 +42,8 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
 
+    void contextMenuEvent(QContextMenuEvent *event) override;
+
 private:
     void initShaders(QOpenGLShaderProgram *program, std::string vertex_shader, std::string fragment_shader);
     void drawAxisOverlay(); // Draw axis overlay    
@@ -57,6 +60,6 @@ private:
 
     // Camera 
     Camera *m_camera;
-
+    Context *m_contextMenu;
 };
 

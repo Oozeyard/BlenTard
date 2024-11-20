@@ -19,6 +19,7 @@ SOURCES += Main.cpp \
     src/app/widgets/Inspector.cpp \
     src/app/widgets/Hierarchy.cpp \
     src/app/widgets/Tools.cpp \
+    src/app/widgets/Context.cpp \
     src/Node.cpp \
     src/Mesh.cpp \
     src/Camera.cpp \
@@ -29,11 +30,12 @@ HEADERS += src/app/MainWindow.h \
     src/app/widgets/Inspector.h \
     src/app/widgets/Hierarchy.h \
     src/app/widgets/Tools.h \
+    src/app/widgets/Context.h \
     src/includes/Transform.h \
     src/includes/Node.h \
     src/includes/Mesh.h \    
     src/includes/Camera.h \
-    src/includes/GridOverlay.h
+    src/includes/GridOverlay.h 
 
 INCLUDEPATH += ./libs/glm-0.9.7.1 \
     ./libs/assimp-5.4.3/include \

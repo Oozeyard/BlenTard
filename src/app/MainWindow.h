@@ -24,5 +24,7 @@ public:
 
 private:
    void InitMenuBar();
-   // GLWidget *glWidget;
+   void InitTools();
+
+   ToolBar *toolBar;
 };

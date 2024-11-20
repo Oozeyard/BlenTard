@@ -1,12 +1,17 @@
 #include "GLWidget.h"
 
 GLWidget::GLWidget(QWidget *parent)
-    : QOpenGLWidget(parent)
+    : QOpenGLWidget(parent), m_contextMenu(new Context(this))
 {
     setFocusPolicy(Qt::StrongFocus);  // Permit to receive key events
     
     // Scene Hierachy
     m_rootNode = new Node("Root");
+    
+    // Context menu
+    connect(m_contextMenu, &Context::actionTriggered, this, [](const QString &actionName) {
+        qDebug() << "Action triggered:" << actionName;
+    });
 
 }
 
@@ -20,6 +25,7 @@ GLWidget::~GLWidget()
     delete m_rootNode;
     delete m_gridOverlay;
     delete m_camera;
+    delete m_contextMenu;
     doneCurrent();
 }
 
@@ -138,4 +144,8 @@ void GLWidget::wheelEvent(QWheelEvent *event)
     std::cout << "Wheel moved: " << event->angleDelta().y() << std::endl;
     m_camera->wheelEvent(event);
 
+}
+
+void GLWidget::contextMenuEvent(QContextMenuEvent *event) {
+    m_contextMenu->showContextMenu(event->globalPos());
 }
