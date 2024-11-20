@@ -107,3 +107,4 @@ void Mesh::draw(QOpenGLShaderProgram* program)
     glActiveTexture(GL_TEXTURE0);
     program->release();
 }
+

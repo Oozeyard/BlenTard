@@ -6,6 +6,13 @@
 #include <QAction>
 #include <iostream>
 
+enum ActionType {
+    ADD_CUBE,
+    ADD_SPHERE,
+    ADD_CUSTOM_MODEL,
+    DELETE
+};
+
 class Context : public QMenu {
     Q_OBJECT
 
@@ -14,5 +21,5 @@ public:
     void showContextMenu(const QPoint &pos);
 
 signals:
-    void actionTriggered(const QString &actionName);
+    void actionTriggered(const ActionType &actionType);
 };

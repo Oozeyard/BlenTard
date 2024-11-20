@@ -26,7 +26,7 @@ enum ToolType {
 class Tool {
 
 public:
-    Tool(QString name, QIcon icon, ToolType type) : name(name), icon(icon), type(type) {}
+    Tool(QString name, QIcon icon, ToolType type) : type(type), name(name), icon(icon) {}
     Tool() {}
 
     void addSubTool(Tool tool) {subTools.push_back(tool);}
@@ -43,10 +43,10 @@ public:
 
     QString getToolDescription() {return toolDescription;}
 
-    ToolType type = NONE;
+    ToolType type;
 private:
     QString name;
-    QIcon icon;
+    QIcon icon { QIcon() };
     QVector<Tool> subTools;
     bool isSubToolsVisible = false;
     QString toolDescription = "Not available";

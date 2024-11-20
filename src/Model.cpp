@@ -12,6 +12,13 @@ Model::~Model()
     for (auto& texture : m_texturesLoaded) {
         glDeleteTextures(1, &texture.id);
     }
+
+    for (auto& child : m_children) {
+        delete child;
+    }
+
+    m_texturesLoaded.clear();
+    m_children.clear();
 }
 
 
@@ -58,6 +65,8 @@ Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene)
 
         if (mesh->mTextureCoords[0]) {
             vertex.texCoords = QVector2D(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+            vertex.tangent = QVector3D(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
+            vertex.bitangent = QVector3D(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
         } else {
             vertex.texCoords = QVector2D(0.0f, 0.0f);
         }

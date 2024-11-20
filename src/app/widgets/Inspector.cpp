@@ -16,7 +16,7 @@ Inspector::Inspector(QWidget *parent, ToolBar *toolBar)
 }
 
 void Inspector::setToolInfo(Tool *tool) {
-  std::cout << "Setting tool info" << std::endl;
+  // std::cout << "Setting tool info" << std::endl;
   toolNameLabel->setText("Tool: " + tool->getName());
   toolDescriptionLabel->setText("Description: " + tool->getToolDescription());
 }
