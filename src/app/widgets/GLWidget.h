@@ -20,10 +20,6 @@
 #include <iostream>
 #include <string>
 
-Mesh* createCube();
-Mesh* createSphere();
-void loadCustomModel(Node *node);
-
 class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
@@ -56,6 +52,10 @@ protected:
 private:
     void initShaders(QOpenGLShaderProgram *program, std::string vertex_shader, std::string fragment_shader);
     void doAction(const ActionType &actionType);
+    
+    void createCube();
+    void createSphere();
+    void loadCustomModel();
 
     // Shaders
     QOpenGLShaderProgram *m_program;

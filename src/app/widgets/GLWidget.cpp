@@ -72,12 +72,12 @@ void GLWidget::initializeGL()
     m_camera = new Camera("MainCamera");
     m_camera->setAspect(static_cast<float>(width()) / static_cast<float>(height()));
 
-    Model* map = new Model("Map", "models/swamp-location/source/map_1.obj"); map->transform.rotate(QVector3D(90, 0, 0));
-    Model* cube = new Model("Cube", "models/cube.obj");
-    Model* dragon = new Model("Dragon", "models/fbx/Dragon 2.5_fbx.fbx");
-    m_rootNode->addChild(map);
-    m_rootNode->addChild(cube);
-    m_rootNode->addChild(dragon);
+    // Model* map = new Model("Map", "models/swamp-location/source/map_1.obj"); map->transform.rotate(QVector3D(90, 0, 0));
+    // Model* cube = new Model("Cube", "models/cube.obj");
+    // Model* dragon = new Model("Dragon", "models/fbx/Dragon 2.5_fbx.fbx");
+    // m_rootNode->addChild(map);
+    // m_rootNode->addChild(cube);
+    // m_rootNode->addChild(dragon);
 
 
     emit rootNodeCreated(m_rootNode);
@@ -177,18 +177,16 @@ void GLWidget::activateTool(Tool* tool) {
 }
     
 void GLWidget::doAction(const ActionType &actionType) {
-    makeCurrent();
-
     switch (actionType)
     {
     case ADD_CUBE: 
-        m_rootNode->addChild(createCube());
+        createCube();
         break;
     case ADD_SPHERE:
-        m_rootNode->addChild(createSphere());
+        createSphere();
         break;
-    case ADD_CUSTOM_MODEL:
-        loadCustomModel(m_rootNode);
+    case ADD_CUSTOM_MODEL: 
+        loadCustomModel();
         break;
     case DELETE:
         m_rootNode->deleteSelectedNodes();
@@ -196,25 +194,30 @@ void GLWidget::doAction(const ActionType &actionType) {
     default:
         break;
     }
+
     emit rootNodeCreated(m_rootNode);
-    update();
 }
 
-Mesh* createCube() {
+void GLWidget::createCube() {
+    makeCurrent();
     Model* model = new Model("Cube", "models/cube.obj");
-    return static_cast<Mesh*>(model->getChildren().first());
+    m_rootNode->addChild(static_cast<Mesh*>(model->getChildren().first()));
+    doneCurrent();
 }
-Mesh* createSphere() {
+void GLWidget::createSphere() {
+    makeCurrent();
     Model* model = new Model("Sphere", "models/sphere.obj");
     Mesh* sphere = static_cast<Mesh*>(model->getChildren().first());
     sphere->transform.rotate(QVector3D(90, 0, 0));
-    return sphere;
+    m_rootNode->addChild(sphere);
+    doneCurrent();
 }
 
-void loadCustomModel(Node *node) {
+void GLWidget:: loadCustomModel() {
     QString fileName = QFileDialog::getOpenFileName(nullptr, "Open Model", QDir::currentPath(), "Model Files (*.obj *.fbx)");
     if (fileName.isEmpty()) return;
-
-    Model* customModel = new Model("CustomModel", fileName);
-    node->addChild(customModel);
+    QString modelName = QFileInfo(fileName).baseName();
+    makeCurrent();
+    m_rootNode->addChild(new Model(modelName, fileName));
+    doneCurrent();
 }
