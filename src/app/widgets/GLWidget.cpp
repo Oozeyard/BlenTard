@@ -9,8 +9,8 @@ GLWidget::GLWidget(QWidget *parent)
     m_rootNode = new Node("Root");
     
     // Context menu
-    connect(m_contextMenu, &Context::actionTriggered, this, [](const QString &actionName) {
-        qDebug() << "Action triggered:" << actionName;
+    connect(m_contextMenu, &Context::actionTriggered, this, [this](const ActionType &actionType) {
+        doAction(actionType);
     });
 }
 
@@ -72,12 +72,13 @@ void GLWidget::initializeGL()
     m_camera = new Camera("MainCamera");
     m_camera->setAspect(static_cast<float>(width()) / static_cast<float>(height()));
 
-    Model* map = new Model("Map", "models/swamp-location/source/map_1.obj"); map->transform.rotate(QVector3D(90, 0, 0));
-    Model* cube = new Model("Cube", "models/cube.obj");
-    Model* dragon = new Model("Dragon", "models/fbx/Dragon 2.5_fbx.fbx");
-    m_rootNode->addChild(map);
-    m_rootNode->addChild(cube);
-    m_rootNode->addChild(dragon);
+    // Model* map = new Model("Map", "models/swamp-location/source/map_1.obj"); map->transform.rotate(QVector3D(90, 0, 0));
+    // Model* cube = new Model("Cube", "models/cube.obj");
+    // Model* dragon = new Model("Dragon", "models/fbx/Dragon 2.5_fbx.fbx");
+    // m_rootNode->addChild(map);
+    // m_rootNode->addChild(cube);
+    // m_rootNode->addChild(dragon);
+
 
     emit rootNodeCreated(m_rootNode);
 }
@@ -128,21 +129,21 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
 
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
-    std::cout << "Mouse pressed: " << event->button() << std::endl;
+    // std::cout << "Mouse pressed: " << event->button() << std::endl;
     m_camera->mousePressEvent(event);
 
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    std::cout << "Mouse moved: " << event->pos().x() << ", " << event->pos().y() << std::endl;
+    // std::cout << "Mouse moved: " << event->pos().x() << ", " << event->pos().y() << std::endl;
     m_camera->mouseMoveEvent(event);
 
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event)
 {
-    std::cout << "Wheel moved: " << event->angleDelta().y() << std::endl;
+    // std::cout << "Wheel moved: " << event->angleDelta().y() << std::endl;
     m_camera->wheelEvent(event);
 
 }
@@ -172,4 +173,37 @@ void GLWidget::activateTool(Tool* tool) {
     default:
         break;
     }
+}
+
+void GLWidget::doAction(const ActionType &actionType) {
+    makeCurrent();
+
+    switch (actionType)
+    {
+    case ADD_CUBE: 
+        m_rootNode->addChild(createCube());
+        break;
+    case ADD_SPHERE:
+        m_rootNode->addChild(createSphere());
+        break;
+    case ADD_CUSTOM_MODEL:
+        break;
+    case DELETE:
+        break;
+    default:
+        break;
+    }
+    emit rootNodeCreated(m_rootNode);
+    update();
+}
+
+Mesh* createCube() {
+    Model* model = new Model("Cube", "models/cube.obj");
+    return static_cast<Mesh*>(model->getChildren().first());
+}
+Mesh* createSphere() {
+    Model* model = new Model("Sphere", "models/sphere.obj");
+    Mesh* sphere = static_cast<Mesh*>(model->getChildren().first());
+    sphere->transform.rotate(QVector3D(90, 0, 0));
+    return sphere;
 }

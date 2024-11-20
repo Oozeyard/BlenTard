@@ -35,13 +35,14 @@ HEADERS += src/app/MainWindow.h \
     src/app/widgets/Context.h \
     src/includes/Transform.h \
     src/includes/Node.h \
-    src/includes/Mesh.h \
+    src/includes/Mesh.h \  
     src/includes/Model.h \
     src/includes/Camera.h \
     src/includes/GridOverlay.h \
-    libs/stb_image.h
+    libs/stb_image.h 
 
 INCLUDEPATH += ./libs/glm-0.9.7.1 \
+    ./libs/assimp-5.4.3/include \
     ./libs \
     ./src \
     ./src/app \

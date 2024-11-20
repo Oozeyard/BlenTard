@@ -19,6 +19,8 @@
 #include <iostream>
 #include <string>
 
+Mesh* createCube();
+Mesh* createSphere();
 
 class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -49,7 +51,7 @@ protected:
 
 private:
     void initShaders(QOpenGLShaderProgram *program, std::string vertex_shader, std::string fragment_shader);
-    void drawAxisOverlay(); // Draw axis overlay    
+    void doAction(const ActionType &actionType);
 
     // Shaders
     QOpenGLShaderProgram *m_program;
@@ -65,4 +67,6 @@ private:
     Camera *m_camera;
     Context *m_contextMenu;
 };
+
+
 

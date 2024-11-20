@@ -9,16 +9,16 @@ Context::Context(QWidget *parent) : QMenu(parent) {
 
     // Connexion des signaux pour gérer les actions
     connect(addCubeAction, &QAction::triggered, [this]() {
-        emit actionTriggered("Add Cube");
+        emit actionTriggered(ADD_CUBE);
     });
     connect(addSphereAction, &QAction::triggered, [this]() {
-        emit actionTriggered("Add Sphere");
+        emit actionTriggered(ADD_SPHERE);
     });
     connect(addCustomAction, &QAction::triggered, [this]() {
-        emit actionTriggered("Add Custom Model");
+        emit actionTriggered(ADD_CUSTOM_MODEL);
     });
     connect(deleteAction, &QAction::triggered, [this]() {
-        emit actionTriggered("Delete");
+        emit actionTriggered(DELETE);
     });
 }
 
