@@ -24,6 +24,11 @@ void main() {
 
     vec4 diffuseColor = vec4(0.0);
 
+    if (numDiffuseTextures == 0) {
+        FragColor = vec4(diff * vec3(0.8, 0.8, 0.8), 1.0);
+        return;
+    }
+
     // Manually handle each texture
     if (numDiffuseTextures > 0) diffuseColor += texture(material.texture_diffuse[0], TexCoords);
     if (numDiffuseTextures > 1) diffuseColor += texture(material.texture_diffuse[1], TexCoords);

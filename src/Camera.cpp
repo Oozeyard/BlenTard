@@ -31,8 +31,15 @@ void Camera::init()
 void Camera::computeView(QMatrix4x4 &view, QMatrix4x4 &projection) 
 { 
     projection.setToIdentity();  
-    if (m_isOrthographic) return;
-    else  projection.perspective(m_fov, m_aspect, m_near, m_far);
+
+    if (m_isOrthographic) {
+        float distanceToTarget = (transform.position - m_target).length();
+        float orthoSize = tan((m_fov / 2.0f) * M_PI / 180.0f) * distanceToTarget;
+        projection.ortho(-orthoSize * m_aspect, orthoSize * m_aspect, -orthoSize, orthoSize, m_near, m_far);
+    }
+    else  {
+        projection.perspective(m_fov, m_aspect, m_near, m_far);
+    }
     m_projectionMatrix = projection;
 
     view.setToIdentity();

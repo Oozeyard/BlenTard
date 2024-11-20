@@ -68,8 +68,8 @@ void GLWidget::initializeGL()
     m_camera->setAspect(static_cast<float>(width()) / static_cast<float>(height()));
 
     // Model* model = new Model("Map", "models/swamp-location/source/map_1.obj"); model->transform.rotate(QVector3D(90, 0, 0));
-    // Model* model = new Model("Cube", "models/cube.obj");
-    Model* model = new Model("Dragon", "models/fbx/Dragon 2.5_fbx.fbx");
+    Model* model = new Model("Cube", "models/cube.obj");
+    // Model* model = new Model("Dragon", "models/fbx/Dragon 2.5_fbx.fbx");
     m_rootNode->addChild(model);
 
     emit rootNodeCreated(m_rootNode);
@@ -78,7 +78,10 @@ void GLWidget::initializeGL()
 void GLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
     glEnable(GL_CULL_FACE);
 
     

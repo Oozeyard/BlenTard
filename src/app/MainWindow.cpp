@@ -15,6 +15,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     // OpenGL Widget Main Scene
     GLWidget *glWidget = new GLWidget(this);
+    QSurfaceFormat format = QSurfaceFormat::defaultFormat();
+    format.setSamples(16);
+    glWidget->setFormat(format);
     splitter->addWidget(glWidget);
 
     // ToolBar
