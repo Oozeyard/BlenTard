@@ -31,6 +31,8 @@ public:
     void setSelected();
     bool isSelected() const { return m_selected; };
 
+    void deleteSelectedNodes();
+
 signals:
     void nodeChanged();
 

@@ -9,6 +9,7 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QWheelEvent>
+#include <QFileDialog>
 
 #include "Model.h"
 #include "Camera.h"
@@ -21,6 +22,7 @@
 
 Mesh* createCube();
 Mesh* createSphere();
+void loadCustomModel(Node *node);
 
 class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {

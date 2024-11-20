@@ -188,8 +188,10 @@ void GLWidget::doAction(const ActionType &actionType) {
         m_rootNode->addChild(createSphere());
         break;
     case ADD_CUSTOM_MODEL:
+        loadCustomModel(m_rootNode);
         break;
     case DELETE:
+        m_rootNode->deleteSelectedNodes();
         break;
     default:
         break;
@@ -207,4 +209,12 @@ Mesh* createSphere() {
     Mesh* sphere = static_cast<Mesh*>(model->getChildren().first());
     sphere->transform.rotate(QVector3D(90, 0, 0));
     return sphere;
+}
+
+void loadCustomModel(Node *node) {
+    QString fileName = QFileDialog::getOpenFileName(nullptr, "Open Model", QDir::currentPath(), "Model Files (*.obj *.fbx)");
+    if (fileName.isEmpty()) return;
+
+    Model* customModel = new Model("CustomModel", fileName);
+    node->addChild(customModel);
 }
