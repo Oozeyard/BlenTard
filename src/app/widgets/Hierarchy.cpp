@@ -10,18 +10,35 @@ Hierarchy::Hierarchy(QWidget *parent)
     setLayout(layout);    
 }
 
-void Hierarchy::addObject(const QString &objectName)
-{
-    QTreeWidgetItem *item = new QTreeWidgetItem(treeWidget);
-    item->setText(0, objectName);
-}
-
 void Hierarchy::setRootNode(Node *node)
 {
-    if (node) {
-        for (Node* child : node->getChildren()) {
-            addObject(child->getName());
-            setRootNode(child);
-        }
+    if (!node) return;
+
+    // clear tree
+    treeWidget->clear();
+
+    // add node
+    for (Node *child : node->getChildren()) {
+        addNode(child, nullptr);
+    }
+}
+
+void Hierarchy::addNode(Node *node, QTreeWidgetItem *parentItem)
+{
+    if (!node) return;
+
+    // create node
+    QTreeWidgetItem *currentItem = new QTreeWidgetItem();
+    currentItem->setText(0, node->getName());
+
+    if (parentItem) {
+        parentItem->addChild(currentItem); // add to parent
+    } else {
+        treeWidget->addTopLevelItem(currentItem); // add as root
+    }
+
+    // check children
+    for (Node *child : node->getChildren()) {
+        addNode(child, currentItem);
     }
 }

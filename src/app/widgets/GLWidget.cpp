@@ -72,10 +72,12 @@ void GLWidget::initializeGL()
     m_camera = new Camera("MainCamera");
     m_camera->setAspect(static_cast<float>(width()) / static_cast<float>(height()));
 
-    // Model* model = new Model("Map", "models/swamp-location/source/map_1.obj"); model->transform.rotate(QVector3D(90, 0, 0));
-    Model* model = new Model("Cube", "models/cube.obj");
-    // Model* model = new Model("Dragon", "models/fbx/Dragon 2.5_fbx.fbx");
-    m_rootNode->addChild(model);
+    Model* map = new Model("Map", "models/swamp-location/source/map_1.obj"); map->transform.rotate(QVector3D(90, 0, 0));
+    Model* cube = new Model("Cube", "models/cube.obj");
+    Model* dragon = new Model("Dragon", "models/fbx/Dragon 2.5_fbx.fbx");
+    m_rootNode->addChild(map);
+    m_rootNode->addChild(cube);
+    m_rootNode->addChild(dragon);
 
     emit rootNodeCreated(m_rootNode);
 }

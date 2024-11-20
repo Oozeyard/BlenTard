@@ -15,8 +15,7 @@ class Hierarchy : public QWidget
 public:
     explicit Hierarchy(QWidget *parent = nullptr);
 
-    void addObject(const QString &objectName); // Exemple pour ajouter des objets
-
+    void addNode(Node *node, QTreeWidgetItem *parentItem);
 public slots:
     void setRootNode(Node *node);
 

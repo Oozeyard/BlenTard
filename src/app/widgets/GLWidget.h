@@ -35,7 +35,7 @@ public slots:
     void activateTool(Tool* tool);
 
 signals:
-    void rootNodeCreated(Node *rootNode); // Signal pour envoyer la Node racine
+    void rootNodeCreated(Node *rootNode);
 protected:
     void initializeGL() override;
     void paintGL() override;
