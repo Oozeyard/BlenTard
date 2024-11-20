@@ -48,7 +48,7 @@ INCLUDEPATH += ./libs/glm-0.9.7.1 \
     ./src/includes \
     ./libs
 
-LIBS += -L./libs/assimp/bin -lassimp
+LIBS += -L./libs/assimp-5.4.3/bin -lassimp
 
 unix: LIBS += -lGL -ldl -lpthread
 win32: LIBS += -lopengl32 -lgdi32
