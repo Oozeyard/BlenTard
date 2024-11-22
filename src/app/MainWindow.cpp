@@ -30,11 +30,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     // Hierarchy
     Hierarchy *hierarchy = new Hierarchy(this);
     connect(glWidget, &GLWidget::rootNodeCreated, hierarchy, &Hierarchy::setRootNode);
-    // hierarchy->addObject("Cube");
-    // hierarchy->addObject("Camera");
 
     // Inspector
-    Inspector *inspector = new Inspector(this, toolBar);
+    Inspector *inspector = new Inspector(this, toolBar, hierarchy);
     
     rightLayout->addWidget(hierarchy);
     rightLayout->addWidget(inspector);

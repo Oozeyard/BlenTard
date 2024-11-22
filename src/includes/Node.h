@@ -18,6 +18,7 @@ public:
     ~Node();
 
     Transform transform; // Each node have a transform
+    Transform& getTransform() { return transform; }
 
     void addChild(Node* child);
     void removeChild(Node* child);

@@ -74,4 +74,6 @@ void Hierarchy::onItemClicked(QTreeWidgetItem *item, int column) {
         node->setSelected();
         selectedNodes.insert(node);
     }
+
+    emit nodeSelected(node);
 }

@@ -18,6 +18,9 @@ public:
     explicit Hierarchy(QWidget *parent = nullptr);
     void addNode(Node *node, QTreeWidgetItem *parentItem);
 
+signals:
+    void nodeSelected(Node *node);
+
 public slots:
     void setRootNode(Node *node);
     void onItemClicked(QTreeWidgetItem *item, int column);
@@ -25,6 +28,5 @@ private:
 
     QTreeWidget *treeWidget;
     Node *rootNode = nullptr;
-    Node *currentSelectedNode = nullptr;
     QSet<Node *> selectedNodes;
 };
