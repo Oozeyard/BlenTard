@@ -80,7 +80,7 @@ void GLWidget::initializeGL()
     // m_rootNode->addChild(dragon);
 
 
-    emit rootNodeCreated(m_rootNode);
+    emit updateNode(m_rootNode);
 }
 
 void GLWidget::paintGL()
@@ -123,7 +123,15 @@ void GLWidget::resizeGL(int w, int h)
 
 void GLWidget::keyPressEvent(QKeyEvent *event)
 {
-    std::cout << "Key pressed: " << event->key() << std::endl;
+    // std::cout << "Key pressed: " << event->key() << std::endl;
+    switch (event->key()) {
+    case Qt::Key_Delete :
+        m_rootNode->deleteSelectedNodes();
+        emit updateNode(m_rootNode);
+        break;
+    default:
+        break;
+    }
     m_camera->keyPressEvent(event);
 }
 
@@ -195,7 +203,7 @@ void GLWidget::doAction(const ActionType &actionType) {
         break;
     }
 
-    emit rootNodeCreated(m_rootNode);
+    emit updateNode(m_rootNode);
 }
 
 void GLWidget::createCube() {

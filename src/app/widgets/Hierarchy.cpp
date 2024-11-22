@@ -12,7 +12,7 @@ Hierarchy::Hierarchy(QWidget *parent)
     connect(treeWidget, &QTreeWidget::itemClicked, this, &Hierarchy::onItemClicked);
 }
 
-void Hierarchy::setRootNode(Node *node)
+void Hierarchy::updateNode(Node *node)
 {
     if (!node) return;
 

@@ -22,7 +22,7 @@ signals:
     void nodeSelected(Node *node);
 
 public slots:
-    void setRootNode(Node *node);
+    void updateNode(Node *node);
     void onItemClicked(QTreeWidgetItem *item, int column);
 private:
 

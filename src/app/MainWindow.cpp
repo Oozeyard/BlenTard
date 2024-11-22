@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     // Hierarchy
     Hierarchy *hierarchy = new Hierarchy(this);
-    connect(glWidget, &GLWidget::rootNodeCreated, hierarchy, &Hierarchy::setRootNode);
+    connect(glWidget, &GLWidget::updateNode, hierarchy, &Hierarchy::updateNode);
 
     // Inspector
     Inspector *inspector = new Inspector(this, toolBar, hierarchy);

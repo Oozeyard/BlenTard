@@ -37,7 +37,7 @@ public slots:
     void activateTool(Tool* tool);
 
 signals:
-    void rootNodeCreated(Node *rootNode);
+    void updateNode(Node *rootNode);
 protected:
     void initializeGL() override;
     void paintGL() override;
