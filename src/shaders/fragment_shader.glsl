@@ -15,11 +15,11 @@ in vec2 TexCoords;
 out vec4 FragColor;
 
 // Light properties
-uniform vec3 ligth_position;
-uniform vec3 ligth_direction;
+uniform vec3 light_position;
+uniform vec3 light_direction;
 
 void main() {
-    vec3 lightDir = normalize(ligth_position - Normal);
+    vec3 lightDir = normalize(light_position - Normal);
     float diff = max(dot(Normal, lightDir), 0.0);
     // vec3 diffuse = diff * texture(texture_diffuse1, TexCoords).rgb;
 

@@ -12,6 +12,7 @@ GLWidget::GLWidget(QWidget *parent)
     connect(m_contextMenu, &Context::actionTriggered, this, [this](const ActionType &actionType) {
         doAction(actionType);
     });
+
 }
 
 GLWidget::~GLWidget()
@@ -19,12 +20,14 @@ GLWidget::~GLWidget()
     if (m_program == nullptr)
         return;
     makeCurrent();
-    delete m_program;
-    delete m_programGridOverlay;
-    delete m_rootNode;
-    delete m_gridOverlay;
-    delete m_camera;
-    delete m_contextMenu;
+    if (m_program) delete m_program;
+    if (m_programGridOverlay) delete m_programGridOverlay;
+    if (m_selectionProgram) delete m_selectionProgram;
+    if (m_gridOverlay) delete m_gridOverlay;
+    if (m_rootNode) delete m_rootNode;
+    if (m_camera) delete m_camera;
+    if (m_contextMenu) delete m_contextMenu;
+    if (m_selectionFBO) delete m_selectionFBO;
     doneCurrent();
 }
 
@@ -38,13 +41,13 @@ QSize GLWidget::sizeHint() const
     return QSize(800, 600);
 }
 
-void GLWidget::initShaders(QOpenGLShaderProgram *program, std::string vertex_shader, std::string fragment_shader)
+void GLWidget::initShaders(QOpenGLShaderProgram *program, QString vertex_shader, QString fragment_shader)
 {
-    if (!program->addShaderFromSourceFile(QOpenGLShader::Vertex, vertex_shader.c_str())) {
+    if (!program->addShaderFromSourceFile(QOpenGLShader::Vertex, vertex_shader.toStdString().c_str())) {
         qWarning() << "Error when compiling the vertex shader:" << program->log();
     }
 
-    if (!program->addShaderFromSourceFile(QOpenGLShader::Fragment, fragment_shader.c_str())) {
+    if (!program->addShaderFromSourceFile(QOpenGLShader::Fragment, fragment_shader.toStdString().c_str())) {
         qWarning() << "Error when compiling the fragment shader:" << program->log();
     }
 
@@ -58,11 +61,18 @@ void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);  // Fond noir
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
     // Create the principal shader program
     m_program = new QOpenGLShaderProgram;
     initShaders(m_program, "./src/shaders/vertex_shader.glsl", "./src/shaders/fragment_shader.glsl");
+
+    // Create the selection shader program
+    m_selectionProgram = new QOpenGLShaderProgram;
+    initShaders(m_selectionProgram, "./src/shaders/vertex_shader_selection.glsl", "./src/shaders/fragment_shader_selection.glsl");
+    initializeSelectionBuffer();
+    renderSelectionBuffer();
+
 
     // Create the grid overlay shader program
     m_programGridOverlay = new QOpenGLShaderProgram;
@@ -78,6 +88,11 @@ void GLWidget::initializeGL()
     // m_rootNode->addChild(map);
     // m_rootNode->addChild(cube);
     // m_rootNode->addChild(dragon);
+
+    // Test selection 
+    createCube();
+    createSphere();
+    m_rootNode->getChildren().first()->transform.translate(QVector3D(0, 0, 2));
 
 
     emit rootNodeCreated(m_rootNode);
@@ -95,8 +110,8 @@ void GLWidget::paintGL()
     
     // light
     m_program->bind();
-    m_program->setUniformValue("ligth_position", m_camera->transform.position);
-    m_program->setUniformValue("ligth_direction", m_camera->getFront());
+    m_program->setUniformValue("light_position", m_camera->transform.position);
+    m_program->setUniformValue("light_direction", m_camera->getFront());
     m_program->release();
 
     m_programGridOverlay->bind();
@@ -119,6 +134,7 @@ void GLWidget::resizeGL(int w, int h)
 {
     glViewport(0, 0, w, h);  // Viewport
     m_camera->setAspect(static_cast<float>(w) / static_cast<float>(h));
+    initializeSelectionBuffer();  // Resize the selection buffer
 }
 
 void GLWidget::keyPressEvent(QKeyEvent *event)
@@ -131,6 +147,28 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 {
     // std::cout << "Mouse pressed: " << event->button() << std::endl;
     m_camera->mousePressEvent(event);
+    if (event->buttons() & Qt::LeftButton) {
+        QPoint pos = event->pos();
+        std::cout << "Mouse pressed: " << pos.x() << ", " << pos.y() << std::endl;
+
+        makeCurrent();
+        renderSelectionBuffer();
+
+        int id = getObjectIdAtMouse(pos);
+        doneCurrent();
+
+        if (id != 0) { // If the id is not 0, a node has been selected
+            m_rootNode->deselectAll();
+            Node* node = m_rootNode->getNodeById(id);
+            if (node) {
+                std::cout << "Node selected: " << node->getName().toStdString() << std::endl;
+                node->setSelected();
+            }
+        } else {
+            m_rootNode->deselectAll();
+        }
+        
+    }
 
 }
 
@@ -138,7 +176,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
     // std::cout << "Mouse moved: " << event->pos().x() << ", " << event->pos().y() << std::endl;
     m_camera->mouseMoveEvent(event);
-
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event)
@@ -198,13 +235,15 @@ void GLWidget::doAction(const ActionType &actionType) {
     emit rootNodeCreated(m_rootNode);
 }
 
-void GLWidget::createCube() {
+void GLWidget::createCube() 
+{
     makeCurrent();
     Model* model = new Model("Cube", "models/cube.obj");
     m_rootNode->addChild(static_cast<Mesh*>(model->getChildren().first()));
     doneCurrent();
 }
-void GLWidget::createSphere() {
+void GLWidget::createSphere() 
+{
     makeCurrent();
     Model* model = new Model("Sphere", "models/sphere.obj");
     Mesh* sphere = static_cast<Mesh*>(model->getChildren().first());
@@ -212,12 +251,76 @@ void GLWidget::createSphere() {
     m_rootNode->addChild(sphere);
     doneCurrent();
 }
-
-void GLWidget:: loadCustomModel() {
+void GLWidget:: loadCustomModel() 
+{
     QString fileName = QFileDialog::getOpenFileName(nullptr, "Open Model", QDir::currentPath(), "Model Files (*.obj *.fbx)");
     if (fileName.isEmpty()) return;
     QString modelName = QFileInfo(fileName).baseName();
     makeCurrent();
     m_rootNode->addChild(new Model(modelName, fileName));
     doneCurrent();
+}
+
+void GLWidget::initializeSelectionBuffer() 
+{
+    QSize size(width(), height());
+    m_selectionFBO = new QOpenGLFramebufferObject(size, QOpenGLFramebufferObject::CombinedDepthStencil);
+
+    m_selectionTexture = m_selectionFBO->texture(); // Get the texture from the FBO
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        qWarning() << "Framebuffer not complete!";
+    }
+}
+
+
+void GLWidget::renderSelectionBuffer() 
+{
+    m_selectionFBO->bind(); // Bind the framebuffer
+
+    glEnable(GL_DEPTH_TEST); // Enable depth testing
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear the color buffer with black
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the color and depth buffer
+
+    m_selectionProgram->bind();
+
+    m_selectionProgram->setUniformValue("projection", m_camera->getProjectionMatrix());
+    m_selectionProgram->setUniformValue("view", m_camera->getViewMatrix());
+
+    for (Node* child : m_rootNode->getChildren()) {
+        Model* model = dynamic_cast<Model*>(child);
+        if (model) {
+            for (Node* meshNode : model->getChildren()) {
+                Mesh* mesh = dynamic_cast<Mesh*>(meshNode);
+                if (mesh) {
+                    mesh->draw(m_selectionProgram); // Render with unique color
+                }
+            }
+        } else {
+            Mesh* mesh = dynamic_cast<Mesh*>(child);
+            if (mesh) {
+                mesh->draw(m_selectionProgram); // Render with unique color
+            }
+        }
+    }
+
+    m_selectionProgram->release();
+    m_selectionFBO->release();
+
+    glDisable(GL_DEPTH_TEST); // Disable depth testing
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);  // Set the clear color back to the default
+
+}
+
+int GLWidget::getObjectIdAtMouse(const QPoint& mousePosition) 
+{
+    int x = mousePosition.x();
+    int y = height() - mousePosition.y(); // Invert the y coordinate
+
+    unsigned char pixel[3]; // Store the pixel color
+    m_selectionFBO->bind();
+    glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
+    m_selectionFBO->release();
+
+    return colorToID(pixel[0], pixel[1], pixel[2]);
 }

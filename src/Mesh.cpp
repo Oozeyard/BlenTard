@@ -66,15 +66,21 @@ void Mesh::draw(QOpenGLShaderProgram* program)
         program->setUniformValue("model", qobject_cast<Node*>(parent())->transform.getModelMatrix() * transform.getModelMatrix());
     }
 
+    program->setUniformValue("objectColor", idToColor(this->getId()));
+
     for (int i = 0; i < m_textures.size(); i++) {
         glActiveTexture(GL_TEXTURE0 + i);
 
         const QString& type = m_textures[i].type;
-        uint& counter = textureCounters[type]; 
-        QString uniformName = QString("%1%2").arg(type).arg(++counter); // diffuse1, diffuse2, specular1, specular2, etc.
+        uint& counter = textureCounters[type];
+        QString uniformName = QString("%1%2").arg(type).arg(++counter); // diffuse1, diffuse2, etc.
 
         program->setUniformValue(uniformName.toStdString().c_str(), i);
         glBindTexture(GL_TEXTURE_2D, m_textures[i].id);
+    }
+
+    if (m_textures.size() == 0) {
+        program->setUniformValue("numDiffuseTextures", 0);
     }
 
     if (textureCounters.contains("texture_diffuse")) {
@@ -90,7 +96,6 @@ void Mesh::draw(QOpenGLShaderProgram* program)
     
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
 
-    
     if (m_selected) {
         program->setUniformValue("selected", true);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -100,11 +105,18 @@ void Mesh::draw(QOpenGLShaderProgram* program)
     }
     program->setUniformValue("selected", false);
 
+    // Débind textures
+    for (int i = 0; i < m_textures.size(); i++) {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+    glActiveTexture(GL_TEXTURE0);
+
     m_vertexBuffer.release();
     m_indexBuffer.release();
     m_vao.release();
 
-    glActiveTexture(GL_TEXTURE0);
     program->release();
 }
+
 

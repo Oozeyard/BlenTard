@@ -8,6 +8,7 @@
 #include "Transform.h"
 
 #include <iostream>
+#include <unordered_map>
 
 class Node : public QObject 
 {
@@ -32,6 +33,10 @@ public:
     bool isSelected() const { return m_selected; };
 
     void deleteSelectedNodes();
+    void deselectAll();
+
+    uint getId() const { return m_id; }
+    static Node* getNodeById(uint id);
 
 signals:
     void nodeChanged();
@@ -40,4 +45,13 @@ protected:
     QString m_name;
     QVector<Node*> m_children;
     bool m_selected = false;
+
+private:
+    uint m_id;
+
+    static uint s_nextID;
+    static std::unordered_map<uint, Node*> s_nodeRegistry;
 };
+
+QVector3D idToColor(int id);
+int colorToID(unsigned char r, unsigned char g, unsigned char b);
