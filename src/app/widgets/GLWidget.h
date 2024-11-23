@@ -4,13 +4,16 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLShaderProgram>
+#include <QOpenGLFramebufferObject>
 #include <QOpenGLBuffer>
 #include <QMatrix4x4>
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QFileDialog>
+#include <GL/gl.h>
 
+#include "Node.h"
 #include "Model.h"
 #include "Camera.h"
 #include "GridOverlay.h"
@@ -18,7 +21,6 @@
 #include "Tools.h"
 
 #include <iostream>
-#include <string>
 
 class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -50,7 +52,7 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
 
 private:
-    void initShaders(QOpenGLShaderProgram *program, std::string vertex_shader, std::string fragment_shader);
+    void initShaders(QOpenGLShaderProgram *program, QString vertex_shader, QString fragment_shader);
     void doAction(const ActionType &actionType);
     
     void createCube();
@@ -60,6 +62,7 @@ private:
     // Shaders
     QOpenGLShaderProgram *m_program;
     QOpenGLShaderProgram *m_programGridOverlay;
+    QOpenGLShaderProgram* m_selectionProgram;  // Shader for selection
 
     // Grid Overlay
     GridOverlay *m_gridOverlay;
@@ -70,6 +73,14 @@ private:
     // Camera 
     Camera *m_camera;
     Context *m_contextMenu;
+
+    // Selection (Color picking)
+    void initializeSelectionBuffer();
+    void renderSelectionBuffer();
+    int getObjectIdAtMouse(const QPoint &pos);
+    QOpenGLFramebufferObject* m_selectionFBO;  // Framebuffer for selection
+    GLuint m_selectionTexture;                 // Renderbuffer Object for depth testing
+
 };
 
 
