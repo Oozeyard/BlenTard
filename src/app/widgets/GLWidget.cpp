@@ -71,8 +71,6 @@ void GLWidget::initializeGL()
     m_selectionProgram = new QOpenGLShaderProgram;
     initShaders(m_selectionProgram, "./src/shaders/vertex_shader_selection.glsl", "./src/shaders/fragment_shader_selection.glsl");
     initializeSelectionBuffer();
-    renderSelectionBuffer();
-
 
     // Create the grid overlay shader program
     m_programGridOverlay = new QOpenGLShaderProgram;
