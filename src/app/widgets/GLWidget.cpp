@@ -71,7 +71,7 @@ void GLWidget::initializeGL()
     m_selectionProgram = new QOpenGLShaderProgram;
     initShaders(m_selectionProgram, "./src/shaders/vertex_shader_selection.glsl", "./src/shaders/fragment_shader_selection.glsl");
     initializeSelectionBuffer();
-    renderSelectionBuffer();
+    // renderSelectionBuffer();
 
 
     // Create the grid overlay shader program
@@ -171,9 +171,11 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
             if (node) {
                 std::cout << "Node selected: " << node->getName().toStdString() << std::endl;
                 node->setSelected();
+                emit NodeSelected(node);
             }
         } else {
             m_rootNode->deselectAll();
+            emit NodeSelected(nullptr);
         }
         
     }

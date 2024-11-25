@@ -40,6 +40,8 @@ public slots:
 
 signals:
     void updateNode(Node *rootNode);
+    void NodeSelected(Node *node);
+    
 protected:
     void initializeGL() override;
     void paintGL() override;

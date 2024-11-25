@@ -35,6 +35,7 @@ public:
 
     void deleteSelectedNodes();
     void deselectAll();
+    void selectAll();
 
     uint getId() const { return m_id; }
     static Node* getNodeById(uint id);

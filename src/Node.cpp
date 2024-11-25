@@ -75,6 +75,13 @@ void Node::deselectAll() {
     }
 }
 
+void Node::selectAll() {
+    m_selected = true;
+    for (Node* child : m_children) {
+        child->selectAll();
+    }
+}
+
 void Node::deleteSelectedNodes() {
     for (Node* child : m_children) {
         if (child->isSelected()) {

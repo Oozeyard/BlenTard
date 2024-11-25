@@ -14,7 +14,7 @@ class Inspector : public QWidget {
     Q_OBJECT
 
 public:
-    explicit Inspector(QWidget *parent = nullptr, ToolBar *toolBar = nullptr, Hierarchy *hierarchy = nullptr);
+    explicit Inspector(QWidget *parent = nullptr);
 
 public slots:
     void setToolInfo(Tool *tool);

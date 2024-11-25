@@ -1,11 +1,10 @@
 #include "Inspector.h"
 
-Inspector::Inspector(QWidget *parent, ToolBar *toolBar, Hierarchy *hierarchy) 
+Inspector::Inspector(QWidget *parent) 
     : QWidget(parent),
       toolNameLabel(new QLabel("Tool: None")),
       toolDescriptionLabel(new QLabel("Description: Not available")),
       currentNode(nullptr),
-      hierarchy(hierarchy),
       posXSpinBox(new QDoubleSpinBox), posYSpinBox(new QDoubleSpinBox), posZSpinBox(new QDoubleSpinBox),
       rotXSpinBox(new QDoubleSpinBox), rotYSpinBox(new QDoubleSpinBox), rotZSpinBox(new QDoubleSpinBox),
       scaleXSpinBox(new QDoubleSpinBox), scaleYSpinBox(new QDoubleSpinBox), scaleZSpinBox(new QDoubleSpinBox) {
@@ -66,23 +65,19 @@ Inspector::Inspector(QWidget *parent, ToolBar *toolBar, Hierarchy *hierarchy)
   connect(scaleYSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &Inspector::onScaleChanged);
   connect(scaleZSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &Inspector::onScaleChanged);
 
-  connect(hierarchy, &Hierarchy::nodeSelected, this, &Inspector::updateTransform);
-  
   // Tool info
   layout->addWidget(toolNameLabel);
   layout->addWidget(toolDescriptionLabel);
-
-  connect(toolBar, &ToolBar::toolSelected, this, &Inspector::setToolInfo);
 
   setLayout(layout);
 }
 
 void Inspector::updateTransform(Node *node) {
-  std::cout << "Node selected : " << node->getName().toStdString() << std::endl;
-  
-  currentNode = node;
 
-  if (!currentNode) {
+  if (!node) {
+
+    currentNode = nullptr;
+
     posXSpinBox->setValue(0.0);
     posYSpinBox->setValue(0.0);
     posZSpinBox->setValue(0.0);
@@ -97,6 +92,10 @@ void Inspector::updateTransform(Node *node) {
 
     return;
   }
+
+  std::cout << "Node selected : " << node->getName().toStdString() << std::endl;
+  currentNode = node;
+
 
   const Transform &transform = node->getTransform();
 

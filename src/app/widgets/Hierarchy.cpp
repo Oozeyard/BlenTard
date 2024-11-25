@@ -77,3 +77,7 @@ void Hierarchy::onItemClicked(QTreeWidgetItem *item, int column) {
 
     emit nodeSelected(node);
 }
+
+void Hierarchy::selectNode(Node *node) {
+    emit nodeSelected(node);
+}

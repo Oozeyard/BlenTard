@@ -24,6 +24,7 @@ signals:
 public slots:
     void updateNode(Node *node);
     void onItemClicked(QTreeWidgetItem *item, int column);
+    void selectNode(Node *node);
 private:
 
     QTreeWidget *treeWidget;
