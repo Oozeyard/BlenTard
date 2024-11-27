@@ -36,6 +36,7 @@ public:
     void deleteSelectedNodes();
     void deselectAll();
     void selectAll();
+    QVector<Node*> getSelectedNode();
 
     uint getId() const { return m_id; }
     static Node* getNodeById(uint id);

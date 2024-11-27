@@ -52,6 +52,19 @@ Inspector::Inspector(QWidget *parent)
   scaleYSpinBox->setRange(0.0, 100.0);
   scaleZSpinBox->setRange(0.0, 100.0);
 
+  // Set paddings
+  posXSpinBox->setSingleStep(0.1);
+  posYSpinBox->setSingleStep(0.1);
+  posZSpinBox->setSingleStep(0.1);
+
+  rotXSpinBox->setSingleStep(0.1);
+  rotYSpinBox->setSingleStep(0.1);
+  rotZSpinBox->setSingleStep(0.1);
+
+  scaleXSpinBox->setSingleStep(0.1);
+  scaleYSpinBox->setSingleStep(0.1);
+  scaleZSpinBox->setSingleStep(0.1);
+
   // Connect signals
   connect(posXSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &Inspector::onPositionChanged);
   connect(posYSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &Inspector::onPositionChanged);

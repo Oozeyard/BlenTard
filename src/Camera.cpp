@@ -25,7 +25,6 @@ void Camera::init()
     transform.rotationEuler.setY(qRadiansToDegrees(atan2(direction.x(), direction.z())));
     transform.rotationEuler.setZ(0.0f);
     transform.rotation = QQuaternion::fromEulerAngles(transform.rotationEuler);
-    m_front = transform.rotation.rotatedVector(WORLD_UP);
 }
 
 void Camera::computeView(QMatrix4x4 &view, QMatrix4x4 &projection) 
@@ -45,6 +44,8 @@ void Camera::computeView(QMatrix4x4 &view, QMatrix4x4 &projection)
     view.setToIdentity();
     view.lookAt(transform.position, m_target, WORLD_UP);
     m_viewMatrix = view; 
+
+    m_front = (m_target - transform.position).normalized();
 }
 
 
@@ -91,11 +92,11 @@ void Camera::mouseMoveEvent(QMouseEvent *event)
 
         transform.rotation = rotationX * rotationY;
         transform.rotationEuler = transform.rotation.toEulerAngles();
-        m_front = transform.rotation.rotatedVector(WORLD_UP);
         transform.position = m_target + transform.rotation.rotatedVector(transform.position - m_target);
 
         m_lastMousePos = event->pos();
     }
+
     computeView(m_viewMatrix, m_projectionMatrix);
 
 }

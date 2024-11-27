@@ -100,6 +100,16 @@ Node* Node::getNodeById(uint id) {
     return nullptr; // Not found
 }
 
+QVector<Node*> Node::getSelectedNode() {
+    QVector<Node*> selectedNodes;
+    for (Node* child : m_children) {
+        if (child->isSelected()) {
+            selectedNodes.append(child);
+        }
+    }
+    return selectedNodes;
+}
+
 QVector3D idToColor(int id) {
     return QVector3D(
         ((id & 0xFF)) / 255.0f,           // Red

@@ -1,5 +1,6 @@
 #include "GLWidget.h"
 
+
 GLWidget::GLWidget(QWidget *parent)
     : QOpenGLWidget(parent), m_contextMenu(new Context(this))
 {
@@ -17,12 +18,10 @@ GLWidget::GLWidget(QWidget *parent)
 
 GLWidget::~GLWidget()
 {
-    if (m_program == nullptr)
-        return;
     makeCurrent();
-    if (m_program) delete m_program;
-    if (m_programGridOverlay) delete m_programGridOverlay;
-    if (m_selectionProgram) delete m_selectionProgram;
+    if (m_shaderProgram) delete m_shaderProgram;
+    if (m_shaderGridOverlayProgram) delete m_shaderGridOverlayProgram;
+    if (m_shaderSelectionProgram) delete m_shaderSelectionProgram;
     if (m_gridOverlay) delete m_gridOverlay;
     if (m_rootNode) delete m_rootNode;
     if (m_camera) delete m_camera;
@@ -41,20 +40,6 @@ QSize GLWidget::sizeHint() const
     return QSize(800, 600);
 }
 
-void GLWidget::initShaders(QOpenGLShaderProgram *program, QString vertex_shader, QString fragment_shader)
-{
-    if (!program->addShaderFromSourceFile(QOpenGLShader::Vertex, vertex_shader.toStdString().c_str())) {
-        qWarning() << "Error when compiling the vertex shader:" << program->log();
-    }
-
-    if (!program->addShaderFromSourceFile(QOpenGLShader::Fragment, fragment_shader.toStdString().c_str())) {
-        qWarning() << "Error when compiling the fragment shader:" << program->log();
-    }
-
-    if (!program->link()) {
-        qWarning() << "Error when linking the shader program:" << program->log();
-    }
-}
 
 
 void GLWidget::initializeGL()
@@ -64,20 +49,17 @@ void GLWidget::initializeGL()
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
     // Create the principal shader program
-    m_program = new QOpenGLShaderProgram;
-    initShaders(m_program, "./src/shaders/vertex_shader.glsl", "./src/shaders/fragment_shader.glsl");
+    m_shaderProgram = new Shader("./src/shaders/vertex_shader.glsl", "./src/shaders/fragment_shader.glsl");
 
     // Create the selection shader program
-    m_selectionProgram = new QOpenGLShaderProgram;
-    initShaders(m_selectionProgram, "./src/shaders/vertex_shader_selection.glsl", "./src/shaders/fragment_shader_selection.glsl");
+    m_shaderSelectionProgram = new Shader("./src/shaders/vertex_shader_selection.glsl", "./src/shaders/fragment_shader_selection.glsl");
     initializeSelectionBuffer();
-    // renderSelectionBuffer();
 
 
     // Create the grid overlay shader program
-    m_programGridOverlay = new QOpenGLShaderProgram;
-    initShaders(m_programGridOverlay, "./src/shaders/vertex_shader_grid_overlay.glsl", "./src/shaders/fragment_shader_grid_overlay.glsl");
-    m_gridOverlay = new GridOverlay(m_programGridOverlay);
+    m_shaderGridOverlayProgram = new Shader("./src/shaders/vertex_shader_grid_overlay.glsl", "./src/shaders/fragment_shader_grid_overlay.glsl");
+    m_gridOverlay = new GridOverlay(m_shaderGridOverlayProgram);
+
 
     m_camera = new Camera("MainCamera");
     m_camera->setAspect(static_cast<float>(width()) / static_cast<float>(height()));
@@ -109,22 +91,22 @@ void GLWidget::paintGL()
 
     
     // light
-    m_program->bind();
-    m_program->setUniformValue("light_position", m_camera->transform.position);
-    m_program->setUniformValue("light_direction", m_camera->getFront());
-    m_program->release();
+    m_shaderProgram->bind();
+    m_shaderProgram->setUniformValue("light_position", m_camera->transform.position);
+    m_shaderProgram->setUniformValue("light_direction", m_camera->getFront());
+    m_shaderProgram->release();
 
-    m_programGridOverlay->bind();
-    m_programGridOverlay->setUniformValue("projection", m_camera->getProjectionMatrix());
-    m_programGridOverlay->setUniformValue("view", m_camera->getViewMatrix());
+    m_shaderGridOverlayProgram->bind();
+    m_shaderGridOverlayProgram->setUniformValue("projection", m_camera->getProjectionMatrix());
+    m_shaderGridOverlayProgram->setUniformValue("view", m_camera->getViewMatrix());
     m_gridOverlay->draw();
-    m_programGridOverlay->release();
+    m_shaderGridOverlayProgram->release();
 
-    m_program->bind();
-    m_program->setUniformValue("projection", m_camera->getProjectionMatrix());
-    m_program->setUniformValue("view", m_camera->getViewMatrix());
-    m_rootNode->draw(m_program);
-    m_program->release();
+    m_shaderProgram->bind();
+    m_shaderProgram->setUniformValue("projection", m_camera->getProjectionMatrix());
+    m_shaderProgram->setUniformValue("view", m_camera->getViewMatrix());
+    m_rootNode->draw(m_shaderProgram);
+    m_shaderProgram->release();
 
     update();
 }
@@ -145,9 +127,18 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
         m_rootNode->deleteSelectedNodes();
         emit updateNode(m_rootNode);
         break;
-    default:
+    case Qt::Key_G:
+        m_isGrabbing = !m_isGrabbing;
+        grabNodeSelected();
+        break;
+    case Qt::Key_X:
+        break;
+    case Qt::Key_Y:
+        break;
+    case Qt::Key_Z:
         break;
     }
+
     m_camera->keyPressEvent(event);
 }
 
@@ -196,6 +187,7 @@ void GLWidget::wheelEvent(QWheelEvent *event)
 }
 
 void GLWidget::contextMenuEvent(QContextMenuEvent *event) {
+    if (m_isGrabbing) return;
     m_contextMenu->showContextMenu(event->globalPos());
 }
 
@@ -257,7 +249,6 @@ void GLWidget::createSphere()
     makeCurrent();
     Model* model = new Model("Sphere", "models/sphere.obj");
     Mesh* sphere = static_cast<Mesh*>(model->getChildren().first());
-    sphere->transform.rotate(QVector3D(90, 0, 0));
     m_rootNode->addChild(sphere);
     doneCurrent();
 }
@@ -292,10 +283,10 @@ void GLWidget::renderSelectionBuffer()
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear the color buffer with black
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the color and depth buffer
 
-    m_selectionProgram->bind();
+    m_shaderSelectionProgram->bind();
 
-    m_selectionProgram->setUniformValue("projection", m_camera->getProjectionMatrix());
-    m_selectionProgram->setUniformValue("view", m_camera->getViewMatrix());
+    m_shaderSelectionProgram->setUniformValue("projection", m_camera->getProjectionMatrix());
+    m_shaderSelectionProgram->setUniformValue("view", m_camera->getViewMatrix());
 
     for (Node* child : m_rootNode->getChildren()) {
         Model* model = dynamic_cast<Model*>(child);
@@ -303,18 +294,18 @@ void GLWidget::renderSelectionBuffer()
             for (Node* meshNode : model->getChildren()) {
                 Mesh* mesh = dynamic_cast<Mesh*>(meshNode);
                 if (mesh) {
-                    mesh->draw(m_selectionProgram); // Render with unique color
+                    mesh->draw(m_shaderSelectionProgram); // Render with unique color
                 }
             }
         } else {
             Mesh* mesh = dynamic_cast<Mesh*>(child);
             if (mesh) {
-                mesh->draw(m_selectionProgram); // Render with unique color
+                mesh->draw(m_shaderSelectionProgram); // Render with unique color
             }
         }
     }
 
-    m_selectionProgram->release();
+    m_shaderSelectionProgram->release();
     m_selectionFBO->release();
 
     glDisable(GL_DEPTH_TEST); // Disable depth testing
@@ -333,4 +324,74 @@ int GLWidget::getObjectIdAtMouse(const QPoint& mousePosition)
     m_selectionFBO->release();
 
     return colorToID(pixel[0], pixel[1], pixel[2]);
+}
+
+void GLWidget::grabNodeSelected() 
+{
+    QVector<Node*> nodes = m_rootNode->getSelectedNode();
+    if (nodes.isEmpty()) {
+        m_isGrabbing = true;
+        return;
+    }
+    
+    // Get last selected node
+    Node* lastSelected = nodes.last();
+    QVector3D initialPosition = lastSelected->transform.position;
+
+    QVector3D planePoint = initialPosition;
+    QVector3D rayOrigin, rayDirection;
+    QVector3D planeNormal = -m_camera->getFront();
+    QPoint localPos = mapFromGlobal(QCursor::pos());
+    mouseToRay(localPos, rayOrigin, rayDirection);
+
+    QVector3D previousIntersection = rayPlaneIntersection(rayOrigin, rayDirection, planePoint, planeNormal);
+
+    while (!((QApplication::mouseButtons() & Qt::LeftButton)) && m_isGrabbing) {
+        QCoreApplication::processEvents();
+        QVector3D planeNormal = -m_camera->getFront();
+
+        QPoint localPos = mapFromGlobal(QCursor::pos());
+        
+        mouseToRay(localPos, rayOrigin, rayDirection);
+        QVector3D currentIntersection = rayPlaneIntersection(rayOrigin, rayDirection, planePoint, planeNormal);
+
+        QVector3D delta = currentIntersection - previousIntersection;
+        
+        lastSelected->transform.translate(delta);
+
+        previousIntersection = currentIntersection;
+
+        // Undo translation
+        if (QApplication::mouseButtons() & Qt::RightButton) {
+            lastSelected->transform.position = initialPosition;
+            std::cout << "Translation canceled" << std::endl;
+            break;
+        }
+    }
+    m_isGrabbing = false;
+
+}
+
+void GLWidget::mouseToRay(const QPoint& mousePos, QVector3D& rayOrigin, QVector3D& rayDirection)
+{
+    rayOrigin = m_camera->transform.position;
+
+    float x = (2.0f * mousePos.x()) / width() - 1.0f;
+    float y = 1.0f - (2.0f * mousePos.y()) / height();
+    float z = 1.0f;
+    QVector3D ray_nds(x, y, z);
+
+    QVector4D ray_clip(ray_nds.x(), ray_nds.y(), -1.0, 1.0);
+    QVector4D ray_eye = m_camera->getProjectionMatrix().inverted() * ray_clip;
+    ray_eye.setZ(-1.0);
+    ray_eye.setW(0.0);
+
+    QVector4D ray_world = m_camera->getViewMatrix().inverted() * ray_eye;
+    rayDirection = ray_world.toVector3D().normalized();
+}
+
+QVector3D GLWidget::rayPlaneIntersection(const QVector3D& rayOrigin, const QVector3D& rayDirection, const QVector3D& planeOrigin, const QVector3D& planeNormal)
+{
+    float t = QVector3D::dotProduct(planeNormal, rayOrigin - planeOrigin) / QVector3D::dotProduct(planeNormal, -rayDirection);
+    return rayOrigin + t * rayDirection;
 }

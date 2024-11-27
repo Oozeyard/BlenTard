@@ -11,6 +11,8 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QFileDialog>
+#include <QApplication>
+#include <QCoreApplication>
 #include <GL/gl.h>
 
 #include "Node.h"
@@ -19,6 +21,7 @@
 #include "GridOverlay.h"
 #include "Context.h"
 #include "Tools.h"
+#include "Shader.h"
 
 #include <iostream>
 
@@ -54,17 +57,24 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
 
 private:
-    void initShaders(QOpenGLShaderProgram *program, QString vertex_shader, QString fragment_shader);
     void doAction(const ActionType &actionType);
     
     void createCube();
     void createSphere();
     void loadCustomModel();
 
+    // Manage transformation
+    void grabNodeSelected();
+    bool m_isGrabbing { false };
+    bool m_isConstrained { false };
+    QVector3D m_constraint { 1.0f, 1.0f, 1.0f };
+    QVector3D rayPlaneIntersection(const QVector3D& rayOrigin, const QVector3D& rayDirection, const QVector3D& planeOrigin, const QVector3D& planeNormal);
+    void mouseToRay(const QPoint& mousePos, QVector3D& rayOrigin, QVector3D& rayDirection);
+
     // Shaders
-    QOpenGLShaderProgram *m_program;
-    QOpenGLShaderProgram *m_programGridOverlay;
-    QOpenGLShaderProgram* m_selectionProgram;  // Shader for selection
+    Shader *m_shaderProgram;
+    Shader *m_shaderGridOverlayProgram;
+    Shader *m_shaderSelectionProgram;  // Shader for selection
 
     // Grid Overlay
     GridOverlay *m_gridOverlay;

@@ -6,7 +6,8 @@ QT += core gui opengl
 
 greaterThan(QT_MAJOR_VERSION, 5): QT += widgets
 
-CONFIG += c++11
+CONFIG += c++11 release
+QMAKE_CXXFLAGS_RELEASE = -O3
 
 TARGET = BlenTard
 
@@ -25,6 +26,7 @@ SOURCES += Main.cpp \
     src/Model.cpp \
     src/Camera.cpp \
     src/GridOverlay.cpp \
+    src/Shader.cpp \
     libs/stb_image.cpp
 
 HEADERS += src/app/MainWindow.h \
@@ -39,6 +41,7 @@ HEADERS += src/app/MainWindow.h \
     src/includes/Model.h \
     src/includes/Camera.h \
     src/includes/GridOverlay.h \
+    src/includes/Shader.h \
     libs/stb_image.h 
 
 INCLUDEPATH += ./libs/glm-0.9.7.1 \
