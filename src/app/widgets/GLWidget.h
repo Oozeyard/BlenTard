@@ -22,6 +22,7 @@
 #include "Context.h"
 #include "Tools.h"
 #include "Shader.h"
+#include "Gizmo.h"
 
 #include <iostream>
 
@@ -40,6 +41,7 @@ public:
 
 public slots:
     void activateTool(Tool* tool);
+    void setCurrentNode(Node *node) { m_currentNode = node; }
 
 signals:
     void updateNode(Node *rootNode);
@@ -65,9 +67,10 @@ private:
 
     // Manage transformation
     void grabNodeSelected();
-    bool m_isGrabbing { false };
-    bool m_isConstrained { false };
     QVector3D m_constraint { 1.0f, 1.0f, 1.0f };
+
+    QPoint m_lastMousePos;
+    
     QVector3D rayPlaneIntersection(const QVector3D& rayOrigin, const QVector3D& rayDirection, const QVector3D& planeOrigin, const QVector3D& planeNormal);
     void mouseToRay(const QPoint& mousePos, QVector3D& rayOrigin, QVector3D& rayDirection);
 
@@ -75,16 +78,26 @@ private:
     Shader *m_shaderProgram;
     Shader *m_shaderGridOverlayProgram;
     Shader *m_shaderSelectionProgram;  // Shader for selection
+    Shader *m_gizmoProgram;
 
     // Grid Overlay
     GridOverlay *m_gridOverlay;
 
     // Scene 
     Node *m_rootNode;
+    Node *m_currentNode;
 
     // Camera 
     Camera *m_camera;
     Context *m_contextMenu;
+
+    // Gizmo
+    Gizmo *m_gizmo;
+
+    // boolean
+    bool m_isScaling = false;
+    bool m_isRotating = false;
+    bool m_isGrabbing = false;
 
     // Selection (Color picking)
     void initializeSelectionBuffer();
@@ -92,7 +105,6 @@ private:
     int getObjectIdAtMouse(const QPoint &pos);
     QOpenGLFramebufferObject* m_selectionFBO;  // Framebuffer for selection
     GLuint m_selectionTexture;                 // Renderbuffer Object for depth testing
-
 };
 
 

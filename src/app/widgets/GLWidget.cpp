@@ -2,10 +2,11 @@
 
 
 GLWidget::GLWidget(QWidget *parent)
-    : QOpenGLWidget(parent), m_contextMenu(new Context(this))
+    : QOpenGLWidget(parent), m_contextMenu(new Context(this)), m_currentNode(nullptr)
 {
     setFocusPolicy(Qt::StrongFocus);  // Permit to receive key events
-    
+    QWidget::setMouseTracking(true);  // Permit to receive mouse move events
+
     // Scene Hierachy
     m_rootNode = new Node("Root");
     
@@ -26,6 +27,7 @@ GLWidget::~GLWidget()
     if (m_rootNode) delete m_rootNode;
     if (m_camera) delete m_camera;
     if (m_contextMenu) delete m_contextMenu;
+    if (m_gizmo) delete m_gizmo;
     if (m_selectionFBO) delete m_selectionFBO;
     doneCurrent();
 }
@@ -39,8 +41,6 @@ QSize GLWidget::sizeHint() const
 {
     return QSize(800, 600);
 }
-
-
 
 void GLWidget::initializeGL()
 {
@@ -60,6 +60,10 @@ void GLWidget::initializeGL()
     m_shaderGridOverlayProgram = new Shader("./src/shaders/vertex_shader_grid_overlay.glsl", "./src/shaders/fragment_shader_grid_overlay.glsl");
     m_gridOverlay = new GridOverlay(m_shaderGridOverlayProgram);
 
+
+    // Gizmo
+    m_gizmoProgram = new Shader("./src/shaders/vertex_shader_gizmo.glsl", "./src/shaders/fragment_shader_gizmo.glsl");
+    m_gizmo = new Gizmo(m_gizmoProgram);
 
     m_camera = new Camera("MainCamera");
     m_camera->setAspect(static_cast<float>(width()) / static_cast<float>(height()));
@@ -108,6 +112,14 @@ void GLWidget::paintGL()
     m_rootNode->draw(m_shaderProgram);
     m_shaderProgram->release();
 
+    // Gizmo needs to be rendered at the end
+    m_gizmoProgram->bind();
+    m_gizmoProgram->setUniformValue("projection", m_camera->getProjectionMatrix());
+    m_gizmoProgram->setUniformValue("view", m_camera->getViewMatrix());
+    if (m_currentNode) m_gizmoProgram->setUniformValue("modelModel", m_currentNode->transform.getModelMatrix());
+    m_gizmo->draw();
+    m_gizmoProgram->release();
+
     update();
 }
 
@@ -123,19 +135,41 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
 {
     // std::cout << "Key pressed: " << event->key() << std::endl;
     switch (event->key()) {
-    case Qt::Key_Delete :
+    case Qt::Key_Delete : // Delete 
         m_rootNode->deleteSelectedNodes();
         emit updateNode(m_rootNode);
         break;
-    case Qt::Key_G:
-        m_isGrabbing = !m_isGrabbing;
-        grabNodeSelected();
+    case Qt::Key_S: // Scale
+        if (m_currentNode) {
+            m_isScaling = !m_isScaling;
+            m_isRotating = false; m_isGrabbing = false;
+            if (m_isScaling) m_gizmo->setMode(TransformMode::Scale);
+            else m_gizmo->setMode(TransformMode::None);
+            m_lastMousePos = QCursor::pos();
+        }
         break;
-    case Qt::Key_X:
+    case Qt::Key_R: // Rotate
+        if (m_currentNode) {
+            m_isRotating = !m_isRotating;
+            m_isScaling = false; m_isGrabbing = false;
+            if (m_isRotating) m_gizmo->setMode(TransformMode::Rotate);
+            else m_gizmo->setMode(TransformMode::None);
+            m_lastMousePos = QCursor::pos();
+        }
         break;
-    case Qt::Key_Y:
+    case Qt::Key_G: // Grab (translate)
+        if (m_currentNode) {
+            m_isGrabbing = !m_isGrabbing;
+            m_isScaling = false; m_isRotating = false;
+            if (m_isGrabbing) {
+                m_gizmo->setMode(TransformMode::Translate);
+                grabNodeSelected();
+            }
+            else m_gizmo->setMode(TransformMode::None);
+            m_lastMousePos = QCursor::pos();
+        }
         break;
-    case Qt::Key_Z:
+    default:
         break;
     }
 
@@ -147,9 +181,14 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
     // std::cout << "Mouse pressed: " << event->button() << std::endl;
     m_camera->mousePressEvent(event);
     if (event->buttons() & Qt::LeftButton) {
+
+        // Reset gizmo
+        m_isScaling = false; m_isRotating = false; m_isGrabbing = false;
+        m_gizmo->setMode(TransformMode::None);
+
         QPoint pos = event->pos();
         std::cout << "Mouse pressed: " << pos.x() << ", " << pos.y() << std::endl;
-
+        
         makeCurrent();
         renderSelectionBuffer();
 
@@ -162,6 +201,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
             if (node) {
                 std::cout << "Node selected: " << node->getName().toStdString() << std::endl;
                 node->setSelected();
+                m_currentNode = node;
                 emit NodeSelected(node);
             }
         } else {
@@ -177,6 +217,20 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
     // std::cout << "Mouse moved: " << event->pos().x() << ", " << event->pos().y() << std::endl;
     m_camera->mouseMoveEvent(event);
+    if (m_isScaling && m_currentNode) {
+        QPoint currentPos = QCursor::pos();
+        float delta = currentPos.y() - m_lastMousePos.y();
+        m_currentNode->transform.scaleBy(QVector3D(1 + delta * 0.01, 1 + delta * 0.01, 1 + delta * 0.01));
+        m_lastMousePos = currentPos;
+    }
+    if (m_isRotating && m_currentNode) {
+        QPoint currentPos = QCursor::pos();
+        float deltaX = currentPos.x() - m_lastMousePos.x();
+        float deltaY = currentPos.y() - m_lastMousePos.y();
+        m_currentNode->transform.rotate(QVector3D(0, deltaX, 0));
+        m_currentNode->transform.rotate(QVector3D(deltaY, 0, 0));
+        m_lastMousePos = currentPos;
+    }
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event)
@@ -328,15 +382,8 @@ int GLWidget::getObjectIdAtMouse(const QPoint& mousePosition)
 
 void GLWidget::grabNodeSelected() 
 {
-    QVector<Node*> nodes = m_rootNode->getSelectedNode();
-    if (nodes.isEmpty()) {
-        m_isGrabbing = true;
-        return;
-    }
-    
-    // Get last selected node
-    Node* lastSelected = nodes.last();
-    QVector3D initialPosition = lastSelected->transform.position;
+    if (!m_currentNode) return;
+    QVector3D initialPosition = m_currentNode->transform.position;
 
     QVector3D planePoint = initialPosition;
     QVector3D rayOrigin, rayDirection;
@@ -357,19 +404,22 @@ void GLWidget::grabNodeSelected()
 
         QVector3D delta = currentIntersection - previousIntersection;
         
-        lastSelected->transform.translate(delta);
+        m_currentNode->transform.translate(delta);
 
         previousIntersection = currentIntersection;
 
         // Undo translation
         if (QApplication::mouseButtons() & Qt::RightButton) {
-            lastSelected->transform.position = initialPosition;
+            m_currentNode->transform.position = initialPosition;
             std::cout << "Translation canceled" << std::endl;
             break;
         }
     }
     m_isGrabbing = false;
-
+    m_gizmo->setMode(TransformMode::None);
+    m_currentNode->setSelected();
+    m_currentNode = nullptr;
+    emit NodeSelected(nullptr);
 }
 
 void GLWidget::mouseToRay(const QPoint& mousePos, QVector3D& rayOrigin, QVector3D& rayDirection)

@@ -39,6 +39,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     rightLayout->addWidget(hierarchy);
     rightLayout->addWidget(inspector);
 
+    connect(hierarchy, &Hierarchy::nodeSelected, glWidget, &GLWidget::setCurrentNode);
+
 
     // QSplitter for resize
     splitter->addWidget(rightContainer);
