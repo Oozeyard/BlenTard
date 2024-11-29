@@ -2,10 +2,12 @@
 
 Gizmo::Gizmo(QOpenGLShaderProgram *program) : shaderProgram(program), transformMode(Translate) {
     initializeOpenGLFunctions();
-    vao.create();
-    vbo.create();
+    lineVao.create();
+    lineVbo.create();
     cubeVao.create();
     cubeVbo.create();
+    arrowVao.create();
+    arrowVbo.create();
     setupGeometry();
 }
 
@@ -24,17 +26,17 @@ void Gizmo::setupGeometry() {
         0.0f, 0.0f, 1.0f // End
     };
 
-    vao.bind();
+    lineVao.bind();
 
-    vbo.bind();
+    lineVbo.bind();
     glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices), lineVertices, GL_STATIC_DRAW);
 
     // Position attribute
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void *)0);
 
-    vbo.release();
-    vao.release();
+    lineVbo.release();
+    lineVao.release();
 
     // Cube
     GLfloat cubeVertices[] = {
@@ -82,15 +84,31 @@ void Gizmo::setupGeometry() {
 
     // Arrow
     GLfloat arrowVertices[] = {
-        0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f,
+        -0.05f, 0.0f, 0.85f,
+        0.05f, 0.0f, 0.85f,
+        0.0f,  0.05f, 0.85f,
 
-        0.0f, 0.0f, 1.0f,
-        0.05f, 0.0f, 0.95f,
+        -0.05f, 0.0f, 0.85f,
+        0.0f, -0.05f, 0.85f,
+        0.05f, 0.0f, 0.85f,
 
-        0.0f, 0.0f, 1.0f,
-        -0.05f, 0.0f, 0.95f
+        0.0f,  0.0f, 1.0f,
+        -0.05f, 0.0f, 0.85f,
+        0.05f, 0.0f, 0.85f,
+
+        0.0f,  0.0f, 1.0f,
+        0.05f, 0.0f, 0.85f,
+        0.0f,  0.05f, 0.85f,
+
+        0.0f,  0.0f, 1.0f,
+        0.0f,  0.05f, 0.85f,
+        -0.05f, 0.0f, 0.85f,
+
+        0.0f,  0.0f, 1.0f,
+        -0.05f, 0.0f, 0.85f,
+        0.0f, -0.05f, 0.85f
     };
+
 
     arrowVao.bind();
     arrowVbo.bind();
@@ -138,7 +156,7 @@ void Gizmo::drawLines() {
     model.setToIdentity();
     shaderProgram->setUniformValue("model", model);
 
-    vao.bind();
+    lineVao.bind();
     shaderProgram->setUniformValue("color", QVector3D(1.0f, 0.0f, 0.0f));  // Rouge
     glDrawArrays(GL_LINES, 0, 2);  // X
 
@@ -147,7 +165,7 @@ void Gizmo::drawLines() {
 
     shaderProgram->setUniformValue("color", QVector3D(0.0f, 0.0f, 1.0f));  // Bleu
     glDrawArrays(GL_LINES, 4, 2);  // Z
-    vao.release();
+    lineVao.release();
 }
 
 void Gizmo::drawTranslation() {
@@ -161,17 +179,14 @@ void Gizmo::drawTranslation() {
 
         switch (axis) {
         case 0: // X
-            modelMatrix.translate(1.0f, 0.0f, 0.0f);
             modelMatrix.rotate(90.0f, 0.0f, 1.0f, 0.0f);
             shaderProgram->setUniformValue("color", QVector3D(1.0f, 0.0f, 0.0f));
             break;
         case 1: // Y
-            modelMatrix.translate(0.0f, 1.0f, 0.0f);
             modelMatrix.rotate(-90.0f, 1.0f, 0.0f, 0.0f);
             shaderProgram->setUniformValue("color", QVector3D(0.0f, 1.0f, 0.0f));
             break;
         case 2: // Z
-            modelMatrix.translate(0.0f, 0.0f, 1.0f);
             shaderProgram->setUniformValue("color", QVector3D(0.0f, 0.0f, 1.0f));
             break;
         }
@@ -185,7 +200,7 @@ void Gizmo::drawTranslation() {
 void Gizmo::drawArrow() {
     arrowVao.bind();
 
-    glDrawArrays(GL_TRIANGLES, 0, 24);
+    glDrawArrays(GL_TRIANGLES, 0, 54);
 
     arrowVao.release();
 }
@@ -265,7 +280,7 @@ void Gizmo::drawScale() {
 void Gizmo::drawCube() {
     cubeVao.bind();
 
-    glDrawArrays(GL_QUADS, 0, 24);
+    glDrawArrays(GL_QUADS, 0, 34);
 
     cubeVao.release();
 }

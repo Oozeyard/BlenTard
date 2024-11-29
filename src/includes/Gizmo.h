@@ -47,11 +47,9 @@ private:
     TransformMode transformMode;
 
     QOpenGLShaderProgram *shaderProgram;
-    QOpenGLVertexArrayObject vao;
-    QOpenGLBuffer vbo;
 
-    QOpenGLVertexArrayObject cubeVao, arrowVao;
-    QOpenGLBuffer cubeVbo, arrowVbo;
+    QOpenGLVertexArrayObject lineVao, cubeVao, arrowVao;
+    QOpenGLBuffer lineVbo, cubeVbo, arrowVbo;
 
     QVector3D xColor = QVector3D(1.0f, 0.0f, 0.0f);
     QVector3D yColor = QVector3D(0.0f, 1.0f, 0.0f);
