@@ -1,10 +1,10 @@
 #include "Mesh.h"
 
-Mesh::Mesh(const QString& name, const QVector<Vertex>& vertices, const QVector<uint>& indices, const QVector<Texture>& textures, Node* parent) :
+Mesh::Mesh(const QString& name, const QVector<Vertex>& vertices, const QVector<uint>& indices, const Material& material, Node* parent) :
     Node(name, parent),
     m_vertices(vertices),
     m_indices(indices),
-    m_textures(textures),
+    m_material(material),
     m_vertexBuffer(QOpenGLBuffer::VertexBuffer),
     m_indexBuffer(QOpenGLBuffer::IndexBuffer)
 {
@@ -58,37 +58,36 @@ void Mesh::draw(QOpenGLShaderProgram* program)
 {
     program->bind();
 
-    QHash<QString, uint> textureCounters;
-
     if (parent() == nullptr) {
         program->setUniformValue("model", transform.getModelMatrix());
     } else {
         program->setUniformValue("model", qobject_cast<Node*>(parent())->transform.getModelMatrix() * transform.getModelMatrix());
     }
 
-    program->setUniformValue("objectColor", idToColor(this->getId()));
+    program->setUniformValue("objectColor", idToColor(getId()));
 
-    for (int i = 0; i < m_textures.size(); i++) {
+    program->setUniformValue("material.albedo", m_material.albedo);
+    program->setUniformValue("material.specular", m_material.specular);
+    program->setUniformValue("material.emissive", m_material.emissive);
+    program->setUniformValue("material.shininess", m_material.shininess);
+    program->setUniformValue("material.metalness", m_material.metalness);
+    program->setUniformValue("material.roughness", m_material.roughness);
+
+    QHash<QString, uint> textureCounters;
+    for (int i = 0; i < m_material.textures.size(); i++) {
         glActiveTexture(GL_TEXTURE0 + i);
 
-        const QString& type = m_textures[i].type;
+        const QString& type = m_material.textures[i].type;
         uint& counter = textureCounters[type];
         QString uniformName = QString("%1%2").arg(type).arg(++counter); // diffuse1, diffuse2, etc.
 
         program->setUniformValue(uniformName.toStdString().c_str(), i);
-        glBindTexture(GL_TEXTURE_2D, m_textures[i].id);
+        glBindTexture(GL_TEXTURE_2D, m_material.textures[i].id);
     }
 
-    if (m_textures.size() == 0) {
-        program->setUniformValue("numDiffuseTextures", 0);
-    }
+    program->setUniformValue("numDiffuseTextures", textureCounters["texture_diffuse"]);
+    program->setUniformValue("numNormalTextures", textureCounters["texture_normal"]);
 
-    if (textureCounters.contains("texture_diffuse")) {
-        program->setUniformValue("numDiffuseTextures", textureCounters["texture_diffuse"]);
-    }
-    if (textureCounters.contains("texture_normal")) {
-        program->setUniformValue("numNormalTextures", textureCounters["texture_normal"]);
-    }
 
     m_vao.bind();
     m_vertexBuffer.bind();
@@ -106,7 +105,7 @@ void Mesh::draw(QOpenGLShaderProgram* program)
     program->setUniformValue("selected", false);
 
     // Débind textures
-    for (int i = 0; i < m_textures.size(); i++) {
+    for (int i = 0; i < m_material.textures.size(); i++) {
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
@@ -117,6 +116,57 @@ void Mesh::draw(QOpenGLShaderProgram* program)
     m_vao.release();
 
     program->release();
+}
+
+void Mesh::subdivide()
+{
+    QVector<Vertex> newVertices = m_vertices;
+    QVector<uint> newIndices;
+
+    QHash<QPair<uint, uint>, uint> midpointCache;
+
+    auto getMidpoint = [&](uint v1Index, uint v2Index) -> uint {
+        QPair<uint, uint> edge = qMakePair(qMin(v1Index, v2Index), qMax(v1Index, v2Index));
+        if (midpointCache.contains(edge)) {
+            return midpointCache[edge];
+        }
+
+        const Vertex& v1 = m_vertices[v1Index];
+        const Vertex& v2 = m_vertices[v2Index];
+
+        Vertex midpoint;
+        midpoint.position = (v1.position + v2.position) / 2.0f;
+        midpoint.normal = (v1.normal + v2.normal).normalized();
+        midpoint.texCoords = (v1.texCoords + v2.texCoords) / 2.0f;
+        midpoint.tangent = (v1.tangent + v2.tangent).normalized();
+        midpoint.bitangent = (v1.bitangent + v2.bitangent).normalized();
+
+        uint midpointIndex = newVertices.size();
+        newVertices.append(midpoint);
+        midpointCache[edge] = midpointIndex;
+
+        return midpointIndex;
+    };
+
+    for (int i = 0; i < m_indices.size(); i += 3) {
+        uint i1 = m_indices[i];
+        uint i2 = m_indices[i + 1];
+        uint i3 = m_indices[i + 2];
+
+        uint m1 = getMidpoint(i1, i2);
+        uint m2 = getMidpoint(i2, i3);
+        uint m3 = getMidpoint(i3, i1);
+
+        newIndices.append(i1); newIndices.append(m1); newIndices.append(m3); // Triangle 1
+        newIndices.append(i2); newIndices.append(m2); newIndices.append(m1); // Triangle 2
+        newIndices.append(i3); newIndices.append(m3); newIndices.append(m2); // Triangle 3
+        newIndices.append(m1); newIndices.append(m2); newIndices.append(m3); // Triangle 4 (central)
+    }
+
+    m_vertices = newVertices;
+    m_indices = newIndices;
+
+    setupMesh();
 }
 
 

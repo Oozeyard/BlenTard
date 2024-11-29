@@ -21,6 +21,7 @@
 #include "GridOverlay.h"
 #include "Context.h"
 #include "Tools.h"
+#include "Utils.h"
 #include "Shader.h"
 #include "Gizmo.h"
 
@@ -67,12 +68,9 @@ private:
 
     // Manage transformation
     void grabNodeSelected();
-    QVector3D m_constraint { 1.0f, 1.0f, 1.0f };
-
-    QPoint m_lastMousePos;
-    
-    QVector3D rayPlaneIntersection(const QVector3D& rayOrigin, const QVector3D& rayDirection, const QVector3D& planeOrigin, const QVector3D& planeNormal);
-    void mouseToRay(const QPoint& mousePos, QVector3D& rayOrigin, QVector3D& rayDirection);
+    void scaleNodeSelected();
+    void rotateNodeSelected();
+    // QVector3D m_constraint { 1.0f, 1.0f, 1.0f };
 
     // Shaders
     Shader *m_shaderProgram;
@@ -94,10 +92,8 @@ private:
     // Gizmo
     Gizmo *m_gizmo;
 
-    // boolean
-    bool m_isScaling = false;
-    bool m_isRotating = false;
-    bool m_isGrabbing = false;
+    // Interactive transformation
+    TransformMode m_transformMode { TransformMode::None };
 
     // Selection (Color picking)
     void initializeSelectionBuffer();

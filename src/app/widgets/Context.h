@@ -10,6 +10,7 @@ enum ActionType {
     ADD_CUBE,
     ADD_SPHERE,
     ADD_CUSTOM_MODEL,
+    SUBDIVIDE,
     DELETE
 };
 

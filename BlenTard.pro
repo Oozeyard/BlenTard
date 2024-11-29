@@ -28,6 +28,7 @@ SOURCES += Main.cpp \
     src/GridOverlay.cpp \
     src/Shader.cpp \
     src/Gizmo.cpp \
+    src/Utils.cpp \
     libs/stb_image.cpp
 
 HEADERS += src/app/MainWindow.h \
@@ -44,6 +45,7 @@ HEADERS += src/app/MainWindow.h \
     src/includes/GridOverlay.h \
     src/includes/Shader.h \
     src/includes/Gizmo.h \
+    src/includes/Utils.h \
     libs/stb_image.h 
 
 INCLUDEPATH += ./libs/glm-0.9.7.1 \

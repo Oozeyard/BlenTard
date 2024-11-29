@@ -18,11 +18,12 @@ uniform mat4 view;
 uniform mat4 projection;
 
 void main() {
-    FragPos = vec3(model * vec4(aPosition, 1.0));
+    vec4 worldPosition = model * vec4(aPosition, 1.0);
+    FragPos = worldPosition.xyz;
     Normal = mat3(transpose(inverse(model))) * aNormal;
     TexCoords = aTexCoords;
     Tangent = mat3(model) * aTangent;
     Bitangent = mat3(model) * aBitangent;
 
-    gl_Position = projection * view * vec4(FragPos, 1.0);
+    gl_Position = projection * view * worldPosition;
 }

@@ -56,8 +56,9 @@ Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene)
 {
     QVector<Vertex> vertices;
     QVector<uint> indices;
-    QVector<Texture> textures;
+    Material material;
 
+    // Get vertices
     for (uint i = 0; i < mesh->mNumVertices; i++) {
         Vertex vertex;
         vertex.position = QVector3D(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
@@ -68,12 +69,13 @@ Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene)
             vertex.tangent = QVector3D(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
             vertex.bitangent = QVector3D(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
         } else {
-            vertex.texCoords = QVector2D(0.0f, 0.0f);
+            vertex.texCoords = QVector2D(0.0f, 0.0f); // Default texture coordinates
         }
 
         vertices.append(vertex);
     }
 
+    // Get indices
     for (uint i = 0; i < mesh->mNumFaces; i++) {
         aiFace face = mesh->mFaces[i];
         for (uint j = 0; j < face.mNumIndices; j++) {
@@ -81,24 +83,45 @@ Mesh* Model::processMesh(aiMesh* mesh, const aiScene* scene)
         }
     }
 
+    // Get materials
     if (mesh->mMaterialIndex != UINT_MAX) {
-        aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-        auto diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-        textures.append(diffuseMaps);
+        aiMaterial* aiMaterial = scene->mMaterials[mesh->mMaterialIndex];
 
-        auto normalMaps = loadMaterialTextures(material, aiTextureType_NORMALS, "texture_normal");
-        textures.append(normalMaps);
+        aiColor3D color;
+        if (AI_SUCCESS == aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color)) {
+            material.albedo = QVector3D(color.r, color.g, color.b);
+        } else {
+            material.albedo = QVector3D(1.0f, 1.0f, 1.0f); // Default albedo color
+        }
 
-        auto metallicMaps = loadMaterialTextures(material, aiTextureType_METALNESS, "texture_metallic");
-        textures.append(metallicMaps);
+        if (AI_SUCCESS == aiMaterial->Get(AI_MATKEY_COLOR_SPECULAR, color)) {
+            material.specular = QVector3D(color.r, color.g, color.b);
+        } else {
+            material.specular = QVector3D(0.5f, 0.5f, 0.5f); // Default specular color
+        }
 
-        auto roughnessMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "texture_roughness");
-        textures.append(roughnessMaps);
+        if (AI_SUCCESS == aiMaterial->Get(AI_MATKEY_SHININESS, material.shininess)) {
+            material.shininess = qMax(material.shininess, 32.0f); // Default shininess
+        } else {
+            material.shininess = 32.0f;
+        }
+
+        // Default values
+        auto appendTextures = [&](aiTextureType type, const QString& name) {
+            QVector<Texture> textures = loadMaterialTextures(aiMaterial, type, name);
+            material.textures.append(textures);
+        };
+
+        appendTextures(aiTextureType_DIFFUSE, "texture_diffuse");
+        appendTextures(aiTextureType_NORMALS, "texture_normal");
+        appendTextures(aiTextureType_METALNESS, "texture_metallic");
+        appendTextures(aiTextureType_DIFFUSE_ROUGHNESS, "texture_roughness");
     }
 
     QString meshName = QString(mesh->mName.C_Str());
-    return new Mesh(meshName, vertices, indices, textures);
+    return new Mesh(meshName, vertices, indices, material);
 }
+
 
 
 QVector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, const QString& typeName)

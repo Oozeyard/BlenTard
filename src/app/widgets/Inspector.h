@@ -27,6 +27,10 @@ public slots:
 private:
     QLabel *toolNameLabel;
     QLabel *toolDescriptionLabel;
+    
+    Node *currentNode;
+    Hierarchy *hierarchy;
+
 
     QDoubleSpinBox *posXSpinBox;
     QDoubleSpinBox *posYSpinBox;
@@ -39,7 +43,4 @@ private:
     QDoubleSpinBox *scaleXSpinBox;
     QDoubleSpinBox *scaleYSpinBox;
     QDoubleSpinBox *scaleZSpinBox;
-
-    Node *currentNode;
-    Hierarchy *hierarchy;
 };

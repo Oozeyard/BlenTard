@@ -30,6 +30,18 @@ struct Texture
     QString path;
 };
 
+struct Material 
+{
+    QVector3D albedo;
+    QVector3D specular;
+    QVector3D emissive;
+    float shininess;
+    float metalness;
+    float roughness;
+
+    QVector<Texture> textures;
+};
+
 class Mesh : public Node, protected QOpenGLFunctions 
 {
     Q_OBJECT
@@ -38,7 +50,7 @@ public:
         const QString& name,
         const QVector<Vertex>& vertices,
         const QVector<uint>& indices,
-        const QVector<Texture>& textures,
+        const Material& material,
         Node* parent = nullptr
     );
     ~Mesh();
@@ -47,13 +59,15 @@ public:
 
     const QVector<Vertex>& vertices() const { return m_vertices; }
     const QVector<uint>& indices() const { return m_indices; }
-    const QVector<Texture>& textures() const { return m_textures; }
+    const Material& material() const { return m_material; }
+
+    void subdivide();
 
 
 private:
     QVector<Vertex> m_vertices;
     QVector<uint> m_indices;
-    QVector<Texture> m_textures;
+    Material m_material;
 
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vertexBuffer;

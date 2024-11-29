@@ -5,6 +5,7 @@ Context::Context(QWidget *parent) : QMenu(parent) {
     QAction *addCubeAction = addAction("Add Cube");
     QAction *addSphereAction = addAction("Add Sphere");
     QAction *addCustomAction = addAction("Add Custom Model");
+    QAction *subdivideAction = addAction("Subdivide");
     QAction *deleteAction = addAction("Delete");
 
     // Connexion des signaux pour gérer les actions
@@ -16,6 +17,9 @@ Context::Context(QWidget *parent) : QMenu(parent) {
     });
     connect(addCustomAction, &QAction::triggered, [this]() {
         emit actionTriggered(ADD_CUSTOM_MODEL);
+    });
+    connect(subdivideAction, &QAction::triggered, [this]() {
+        emit actionTriggered(SUBDIVIDE);
     });
     connect(deleteAction, &QAction::triggered, [this]() {
         emit actionTriggered(DELETE);

@@ -1,6 +1,6 @@
 #include "Gizmo.h"
 
-Gizmo::Gizmo(QOpenGLShaderProgram *program) : shaderProgram(program), transformMode(Translate) {
+Gizmo::Gizmo(QOpenGLShaderProgram *program) : transformMode(None), shaderProgram(program)  {
     initializeOpenGLFunctions();
     lineVao.create();
     lineVbo.create();

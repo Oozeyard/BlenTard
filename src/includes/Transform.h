@@ -43,4 +43,12 @@ public:
     void scaleBy(const QVector3D &scale) {
         this->scale *= scale;
     };
+
+    void setRotationEuler(const QVector3D &euler) {
+        this->rotationEuler = euler;
+        this->rotationEuler.setX(fmod(this->rotationEuler.x(), 360.0f));
+        this->rotationEuler.setY(fmod(this->rotationEuler.y(), 360.0f));
+        this->rotationEuler.setZ(fmod(this->rotationEuler.z(), 360.0f));
+        this->rotation = QQuaternion::fromEulerAngles(rotationEuler);
+    };
 };

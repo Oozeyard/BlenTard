@@ -133,61 +133,56 @@ void GLWidget::resizeGL(int w, int h)
 
 void GLWidget::keyPressEvent(QKeyEvent *event)
 {
-    // std::cout << "Key pressed: " << event->key() << std::endl;
-    switch (event->key()) {
+    // Camera input
+    m_camera->keyPressEvent(event);
+    
+    // Key input
+    switch (event->key()) 
+    {
     case Qt::Key_Delete : // Delete 
         m_rootNode->deleteSelectedNodes();
         emit updateNode(m_rootNode);
         break;
     case Qt::Key_S: // Scale
         if (m_currentNode) {
-            m_isScaling = !m_isScaling;
-            m_isRotating = false; m_isGrabbing = false;
-            if (m_isScaling) m_gizmo->setMode(TransformMode::Scale);
-            else m_gizmo->setMode(TransformMode::None);
-            m_lastMousePos = QCursor::pos();
+            m_transformMode = TransformMode::Scale;
+            m_gizmo->setMode(TransformMode::Scale);
+            scaleNodeSelected();
         }
         break;
     case Qt::Key_R: // Rotate
         if (m_currentNode) {
-            m_isRotating = !m_isRotating;
-            m_isScaling = false; m_isGrabbing = false;
-            if (m_isRotating) m_gizmo->setMode(TransformMode::Rotate);
-            else m_gizmo->setMode(TransformMode::None);
-            m_lastMousePos = QCursor::pos();
+            m_transformMode = TransformMode::Rotate;
+            m_gizmo->setMode(TransformMode::Rotate);
+            rotateNodeSelected();
         }
         break;
     case Qt::Key_G: // Grab (translate)
         if (m_currentNode) {
-            m_isGrabbing = !m_isGrabbing;
-            m_isScaling = false; m_isRotating = false;
-            if (m_isGrabbing) {
-                m_gizmo->setMode(TransformMode::Translate);
-                grabNodeSelected();
-            }
-            else m_gizmo->setMode(TransformMode::None);
-            m_lastMousePos = QCursor::pos();
+            m_transformMode = TransformMode::Translate;
+            m_gizmo->setMode(TransformMode::Translate);
+            grabNodeSelected();
         }
         break;
+
     default:
         break;
     }
 
-    m_camera->keyPressEvent(event);
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
-    // std::cout << "Mouse pressed: " << event->button() << std::endl;
+    // Camera input
     m_camera->mousePressEvent(event);
+
+    // Selection node
     if (event->buttons() & Qt::LeftButton) {
 
         // Reset gizmo
-        m_isScaling = false; m_isRotating = false; m_isGrabbing = false;
         m_gizmo->setMode(TransformMode::None);
 
         QPoint pos = event->pos();
-        std::cout << "Mouse pressed: " << pos.x() << ", " << pos.y() << std::endl;
         
         makeCurrent();
         renderSelectionBuffer();
@@ -195,7 +190,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
         int id = getObjectIdAtMouse(pos);
         doneCurrent();
 
-        if (id != 0) { // If the id is not 0, a node has been selected
+        if (id != 0 && m_transformMode == TransformMode::None) { // If the id is not 0, a node has been selected
             m_rootNode->deselectAll();
             Node* node = m_rootNode->getNodeById(id);
             if (node) {
@@ -204,6 +199,8 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
                 m_currentNode = node;
                 emit NodeSelected(node);
             }
+        } else if (m_transformMode != TransformMode::None) {
+
         } else {
             m_rootNode->deselectAll();
             emit NodeSelected(nullptr);
@@ -215,33 +212,37 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    // std::cout << "Mouse moved: " << event->pos().x() << ", " << event->pos().y() << std::endl;
+    // Camera input
     m_camera->mouseMoveEvent(event);
-    if (m_isScaling && m_currentNode) {
-        QPoint currentPos = QCursor::pos();
+
+    /*if (m_isScaling && m_currentNode) {
+        QPoint currentPos = mapFromGlobal(QCursor::pos());
         float delta = currentPos.y() - m_lastMousePos.y();
         m_currentNode->transform.scaleBy(QVector3D(1 + delta * 0.01, 1 + delta * 0.01, 1 + delta * 0.01));
         m_lastMousePos = currentPos;
     }
     if (m_isRotating && m_currentNode) {
-        QPoint currentPos = QCursor::pos();
+        QPoint currentPos = mapFromGlobal(QCursor::pos());
         float deltaX = currentPos.x() - m_lastMousePos.x();
         float deltaY = currentPos.y() - m_lastMousePos.y();
         m_currentNode->transform.rotate(QVector3D(0, deltaX, 0));
         m_currentNode->transform.rotate(QVector3D(deltaY, 0, 0));
         m_lastMousePos = currentPos;
-    }
+    }*/
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event)
 {
-    // std::cout << "Wheel moved: " << event->angleDelta().y() << std::endl;
+    // Camera input
     m_camera->wheelEvent(event);
 
 }
 
 void GLWidget::contextMenuEvent(QContextMenuEvent *event) {
-    if (m_isGrabbing) return;
+    // If a transformation is in progress, do not show the context menu
+    if (m_transformMode != TransformMode::None) return;
+
+    // Show the context menu
     m_contextMenu->showContextMenu(event->globalPos());
 }
 
@@ -249,7 +250,6 @@ void GLWidget::activateTool(Tool* tool) {
     switch (tool->type)
     {
     case MOVE:
-        
         break;
     case SELECT:
         break;
@@ -281,6 +281,14 @@ void GLWidget::doAction(const ActionType &actionType) {
     case ADD_CUSTOM_MODEL: 
         loadCustomModel();
         break;
+    case SUBDIVIDE:
+    {
+        Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+        if (mesh) {
+            mesh->subdivide();
+        }
+        break;
+    }
     case DELETE:
         m_rootNode->deleteSelectedNodes();
         break;
@@ -389,24 +397,23 @@ void GLWidget::grabNodeSelected()
     QVector3D rayOrigin, rayDirection;
     QVector3D planeNormal = -m_camera->getFront();
     QPoint localPos = mapFromGlobal(QCursor::pos());
-    mouseToRay(localPos, rayOrigin, rayDirection);
+    mouseToRay(localPos, rayOrigin, rayDirection, m_camera, width(), height());
 
     QVector3D previousIntersection = rayPlaneIntersection(rayOrigin, rayDirection, planePoint, planeNormal);
 
-    while (!((QApplication::mouseButtons() & Qt::LeftButton)) && m_isGrabbing) {
+    while (true) {
+        if (QApplication::mouseButtons() & Qt::LeftButton)  break;
         QCoreApplication::processEvents();
+        
         QVector3D planeNormal = -m_camera->getFront();
-
         QPoint localPos = mapFromGlobal(QCursor::pos());
-        
-        mouseToRay(localPos, rayOrigin, rayDirection);
+        mouseToRay(localPos, rayOrigin, rayDirection, m_camera, width(), height());
         QVector3D currentIntersection = rayPlaneIntersection(rayOrigin, rayDirection, planePoint, planeNormal);
-
         QVector3D delta = currentIntersection - previousIntersection;
-        
         m_currentNode->transform.translate(delta);
-
         previousIntersection = currentIntersection;
+
+        emit NodeSelected(m_currentNode);
 
         // Undo translation
         if (QApplication::mouseButtons() & Qt::RightButton) {
@@ -415,33 +422,79 @@ void GLWidget::grabNodeSelected()
             break;
         }
     }
-    m_isGrabbing = false;
+
+    emit NodeSelected(m_currentNode);
+    m_transformMode = TransformMode::None;
     m_gizmo->setMode(TransformMode::None);
-    m_currentNode->setSelected();
-    m_currentNode = nullptr;
-    emit NodeSelected(nullptr);
 }
 
-void GLWidget::mouseToRay(const QPoint& mousePos, QVector3D& rayOrigin, QVector3D& rayDirection)
+
+void GLWidget::scaleNodeSelected() 
 {
-    rayOrigin = m_camera->transform.position;
+    if (!m_currentNode) return;
+    QVector3D initialScale = m_currentNode->transform.scale;
+    
+    QVector3D initialPos = m_currentNode->transform.position;
+    QVector3D screenPos = worldToScreen(initialPos, m_camera, width(), height());
+    
+    QPoint initialMousePos = mapFromGlobal(QCursor::pos());
 
-    float x = (2.0f * mousePos.x()) / width() - 1.0f;
-    float y = 1.0f - (2.0f * mousePos.y()) / height();
-    float z = 1.0f;
-    QVector3D ray_nds(x, y, z);
+    float initialDistance = (QVector2D(initialMousePos) - QVector2D(screenPos.x(), screenPos.y())).length();
 
-    QVector4D ray_clip(ray_nds.x(), ray_nds.y(), -1.0, 1.0);
-    QVector4D ray_eye = m_camera->getProjectionMatrix().inverted() * ray_clip;
-    ray_eye.setZ(-1.0);
-    ray_eye.setW(0.0);
+    while (true) {
+        if (QApplication::mouseButtons() & Qt::LeftButton)  break;
+        QCoreApplication::processEvents();
 
-    QVector4D ray_world = m_camera->getViewMatrix().inverted() * ray_eye;
-    rayDirection = ray_world.toVector3D().normalized();
+        QPoint currentMousePos = mapFromGlobal(QCursor::pos());
+        float currentDistance = (QVector2D(currentMousePos) - QVector2D(screenPos.x(), screenPos.y())).length();
+        float scaleFactor = currentDistance / initialDistance;
+
+        m_currentNode->transform.scale = initialScale * scaleFactor;
+
+        emit NodeSelected(m_currentNode);
+        
+        // Undo scaling
+        if (QApplication::mouseButtons() & Qt::RightButton) {
+            m_currentNode->transform.scale = initialScale;
+            std::cout << "Scaling canceled" << std::endl;
+            break;
+        }
+    }
+
+    emit NodeSelected(m_currentNode);
+    m_transformMode = TransformMode::None;
+    m_gizmo->setMode(TransformMode::None);
 }
 
-QVector3D GLWidget::rayPlaneIntersection(const QVector3D& rayOrigin, const QVector3D& rayDirection, const QVector3D& planeOrigin, const QVector3D& planeNormal)
+void GLWidget::rotateNodeSelected() 
 {
-    float t = QVector3D::dotProduct(planeNormal, rayOrigin - planeOrigin) / QVector3D::dotProduct(planeNormal, -rayDirection);
-    return rayOrigin + t * rayDirection;
+    if (!m_currentNode) return;
+    QVector3D initialRotation = m_currentNode->transform.rotationEuler;
+    QPoint initialMousePos = mapFromGlobal(QCursor::pos());
+
+    while (true) {
+        if (QApplication::mouseButtons() & Qt::LeftButton)  break;
+        QCoreApplication::processEvents();
+
+        QPoint currentMousePos = mapFromGlobal(QCursor::pos());
+        float deltaX = currentMousePos.x() - initialMousePos.x();
+        float deltaY = currentMousePos.y() - initialMousePos.y();
+        m_currentNode->transform.rotate(QVector3D(0, deltaX, 0));
+        m_currentNode->transform.rotate(QVector3D(deltaY, 0, 0));
+
+        initialMousePos = currentMousePos;
+
+        emit NodeSelected(m_currentNode);
+
+        // Undo rotation
+        if (QApplication::mouseButtons() & Qt::RightButton) {
+            m_currentNode->transform.setRotationEuler(initialRotation);
+            std::cout << "Rotation canceled" << std::endl;
+            break;
+        }
+    }
+
+    emit NodeSelected(m_currentNode);
+    m_transformMode = TransformMode::None;
+    m_gizmo->setMode(TransformMode::None);
 }
