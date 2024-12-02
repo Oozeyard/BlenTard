@@ -72,6 +72,9 @@ private:
     void rotateNodeSelected();
     // QVector3D m_constraint { 1.0f, 1.0f, 1.0f };
 
+    // Edit mode
+    bool m_isEditMode { false };
+
     // Shaders
     Shader *m_shaderProgram;
     Shader *m_shaderGridOverlayProgram;
@@ -94,6 +97,8 @@ private:
 
     // Interactive transformation
     TransformMode m_transformMode { TransformMode::None };
+    Transform m_currentNodeTransform, m_lastNodeTransform;
+    std::atomic<int> m_activeTransforms{0}, m_nbTotalActiveTransform{0}; // Number of active transformations
 
     // Selection (Color picking)
     void initializeSelectionBuffer();

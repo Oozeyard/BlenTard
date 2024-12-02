@@ -106,7 +106,6 @@ void Inspector::updateTransform(Node *node) {
     return;
   }
 
-  std::cout << "Node selected : " << node->getName().toStdString() << std::endl;
   currentNode = node;
 
 
