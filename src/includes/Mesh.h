@@ -9,8 +9,11 @@
 #include <QVector>
 #include <QString>
 #include <QHash>
+#include <QSet>
+#include <cfloat>
 
 #include "Node.h"
+#include "Utils.h"
 
 #include <iostream>
 
@@ -61,13 +64,23 @@ public:
     const QVector<uint>& indices() const { return m_indices; }
     const Material& material() const { return m_material; }
 
+    // tools
     void subdivide();
+    void LaplacianSmooth(int iterations, float lambda);
+    void TaubinSmooth(int iterations, float lambda, float mu);
 
+    // utils
+    void computeNormals();
+    void computeTangents();
+    void computeTexCoords();
+    QHash<int, QSet<int>> computeAdjacencyList();
+    void unifySharedVertices();
 
-private:
+protected:
     QVector<Vertex> m_vertices;
     QVector<uint> m_indices;
     Material m_material;
+private:
 
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vertexBuffer;

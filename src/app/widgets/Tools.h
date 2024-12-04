@@ -14,12 +14,20 @@
 
 enum ToolType {
     NONE,
+
+    // Gizmo
+    GIZMO,
     MOVE,
+    ROTATE,
+    SCALE,
+
+    // Selection
     SELECT,
     RECTANGLE_SELECT,
     CIRCLE_SELECT,
     VERTEX_SELECT,
     FACE_SELECT,
+
     ORTHOGRAPHIC
 };
 
@@ -57,6 +65,7 @@ class ToolBar : public QWidget {
 
 public:
     explicit ToolBar(QWidget *parent = nullptr);
+    
     void addTool(Tool tool) {tools.push_back(tool);}
     int GetToolsSize() {return tools.size();}
     void addSeparator();
@@ -71,7 +80,7 @@ public:
 
 private:
     QVector<Tool> tools;
-    Tool *selectedTool = nullptr;
+    Tool *selectedTool;
 
 signals:
     void toolSelected(Tool *tool);

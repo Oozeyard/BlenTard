@@ -20,11 +20,14 @@ class MainWindow : public QMainWindow {
 
 public:
    MainWindow(QWidget *parent = nullptr);
-   ~MainWindow();
 
 private:
    void InitMenuBar();
    void InitTools();
 
-   ToolBar *toolBar;
+
+   GLWidget *glWidget { nullptr };
+   ToolBar *toolBar { nullptr };
+   Hierarchy *hierarchy { nullptr };
+   Inspector *inspector {nullptr};
 };

@@ -28,6 +28,6 @@ public slots:
 private:
 
     QTreeWidget *treeWidget;
-    Node *rootNode = nullptr;
+    Node *rootNode { nullptr };
     QSet<Node *> selectedNodes;
 };

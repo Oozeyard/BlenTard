@@ -113,12 +113,15 @@ void GLWidget::paintGL()
     m_shaderProgram->release();
 
     // Gizmo needs to be rendered at the end
-    m_gizmoProgram->bind();
-    m_gizmoProgram->setUniformValue("projection", m_camera->getProjectionMatrix());
-    m_gizmoProgram->setUniformValue("view", m_camera->getViewMatrix());
-    if (m_currentNode) m_gizmoProgram->setUniformValue("modelModel", m_currentNode->transform.getModelMatrix());
-    m_gizmo->draw();
-    m_gizmoProgram->release();
+    if (m_currentNode && m_gizmo->getMode() != TransformMode::None) {
+        m_gizmoProgram->bind();
+        m_gizmoProgram->setUniformValue("projection", m_camera->getProjectionMatrix());
+        m_gizmoProgram->setUniformValue("view", m_camera->getViewMatrix());
+        m_gizmoProgram->setUniformValue("modelModel", m_currentNode->transform.getModelMatrix());
+        m_gizmo->draw();
+        m_gizmoProgram->release();
+    }
+
 
     std::cout << "\r" << (int)m_activeTransforms << std::flush;
 
@@ -229,7 +232,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
     // Camera input
     m_camera->mouseMoveEvent(event);
-
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event)
@@ -248,11 +250,26 @@ void GLWidget::contextMenuEvent(QContextMenuEvent *event) {
 }
 
 void GLWidget::activateTool(Tool* tool) {
+
     switch (tool->type)
     {
     case MOVE:
+        if (m_currentNode) {
+            m_gizmo->setMode(TransformMode::Translate);
+            m_transformMode = TransformMode::Translate;
+        }
         break;
-    case SELECT:
+    case ROTATE:
+        if (m_currentNode) {
+            m_transformMode = TransformMode::Rotate;
+            m_gizmo->setMode(TransformMode::Rotate);
+        }
+        break;
+    case SCALE:
+        if (m_currentNode) {
+            m_transformMode = TransformMode::Scale;
+            m_gizmo->setMode(TransformMode::Scale);
+        }
         break;
     case RECTANGLE_SELECT:
         break;
@@ -279,6 +296,9 @@ void GLWidget::doAction(const ActionType &actionType) {
     case ADD_SPHERE:
         createSphere();
         break;
+    case ADD_SUZANNE:
+        createSuzanne();
+        break;
     case ADD_CUSTOM_MODEL: 
         loadCustomModel();
         break;
@@ -290,6 +310,22 @@ void GLWidget::doAction(const ActionType &actionType) {
         }
         break;
     }
+    case LAPLACIAN_SMOOTH:
+    {
+        Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+        if (mesh) {
+            mesh->LaplacianSmooth(1, 0.5f);
+        }
+        break;
+    }
+    case TAUBIN_SMOOTH:
+    {
+        Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+        if (mesh) {
+            mesh->TaubinSmooth(1, 0.5f, 0.53f);
+        }
+        break;
+    }
     case DELETE:
         m_rootNode->deleteSelectedNodes();
         break;
@@ -298,6 +334,15 @@ void GLWidget::doAction(const ActionType &actionType) {
     }
 
     emit updateNode(m_rootNode);
+}
+
+void GLWidget::clearScene() 
+{
+    makeCurrent();
+    if(m_rootNode) delete m_rootNode;
+    m_rootNode = new Node("Root");
+    emit updateNode(m_rootNode);
+    doneCurrent();
 }
 
 void GLWidget::createCube() 
@@ -313,6 +358,14 @@ void GLWidget::createSphere()
     Model* model = new Model("Sphere", "models/sphere.obj");
     Mesh* sphere = static_cast<Mesh*>(model->getChildren().first());
     m_rootNode->addChild(sphere);
+    doneCurrent();
+}
+void GLWidget::createSuzanne() 
+{
+    makeCurrent();
+    Model* model = new Model("Suzanne", "models/suzanne.obj");
+    Mesh* suzanne = static_cast<Mesh*>(model->getChildren().first());
+    m_rootNode->addChild(suzanne);
     doneCurrent();
 }
 void GLWidget:: loadCustomModel() 

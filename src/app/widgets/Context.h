@@ -9,8 +9,11 @@
 enum ActionType {
     ADD_CUBE,
     ADD_SPHERE,
+    ADD_SUZANNE,
     ADD_CUSTOM_MODEL,
     SUBDIVIDE,
+    LAPLACIAN_SMOOTH,
+    TAUBIN_SMOOTH,
     DELETE
 };
 

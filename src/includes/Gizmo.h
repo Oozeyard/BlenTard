@@ -23,9 +23,8 @@ public:
 
     void draw();
 
-    void setTransform(const QMatrix4x4 &transform) { modelMatrix = transform; }
-
     void setMode(TransformMode mode) { transformMode = mode; }
+    TransformMode getMode() { return transformMode; }
 
 private:
     void setupGeometry();
@@ -50,6 +49,10 @@ private:
 
     QOpenGLVertexArrayObject lineVao, cubeVao, arrowVao;
     QOpenGLBuffer lineVbo, cubeVbo, arrowVbo;
+
+    QVector<GLfloat> lineVertices;
+    QVector<GLfloat> cubeVertices;
+    QVector<GLfloat> arrowVertices;
 
     QVector3D xColor = QVector3D(1.0f, 0.0f, 0.0f);
     QVector3D yColor = QVector3D(0.0f, 1.0f, 0.0f);

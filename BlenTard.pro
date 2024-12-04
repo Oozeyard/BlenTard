@@ -49,17 +49,16 @@ HEADERS += src/app/MainWindow.h \
     libs/stb_image.h 
 
 INCLUDEPATH += ./libs/glm-0.9.7.1 \
-    ./libs/assimp-5.4.3/include \
     ./libs \
     ./src \
     ./src/app \
     ./src/app/widgets \
     ./src/shaders \
-    ./src/includes \
-    ./libs/assimp-5.4.3/include 
+    ./src/includes
 
-LIBS += -L./libs/assimp-5.4.3/bin -lassimp
+# for Windows, use local assimp
+win32: INCLUDEPATH += ./libs/assimp-5.4.3/include
 
+unix: LIBS += -lGL -ldl -lpthread -lassimp
+win32: LIBS += -lopengl32 -lgdi32 -L./libs/assimp-5.4.3/bin -lassimp
 
-unix: LIBS += -lGL -ldl -lpthread
-win32: LIBS += -lopengl32 -lgdi32

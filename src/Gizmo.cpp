@@ -12,7 +12,7 @@ Gizmo::Gizmo(QOpenGLShaderProgram *program) : transformMode(None), shaderProgram
 }
 
 void Gizmo::setupGeometry() {
-    GLfloat lineVertices[] = {
+    lineVertices = {
         // X-axis (red)
         0.0f, 0.0f, 0.0f,// Origin
         1.0f, 0.0f, 0.0f, // End
@@ -29,7 +29,7 @@ void Gizmo::setupGeometry() {
     lineVao.bind();
 
     lineVbo.bind();
-    glBufferData(GL_ARRAY_BUFFER, sizeof(lineVertices), lineVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, lineVertices.size() * sizeof(GLfloat), lineVertices.data(), GL_STATIC_DRAW);
 
     // Position attribute
     glEnableVertexAttribArray(0);
@@ -39,7 +39,7 @@ void Gizmo::setupGeometry() {
     lineVao.release();
 
     // Cube
-    GLfloat cubeVertices[] = {
+    cubeVertices = {
         -0.05f, -0.05f,  0.05f,
          0.05f, -0.05f,  0.05f,
          0.05f,  0.05f,  0.05f,
@@ -73,7 +73,7 @@ void Gizmo::setupGeometry() {
 
     cubeVao.bind();
     cubeVbo.bind();
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, cubeVertices.size() * sizeof(GLfloat), cubeVertices.data(), GL_STATIC_DRAW);
 
     // Position attribute
     glEnableVertexAttribArray(0);
@@ -83,7 +83,7 @@ void Gizmo::setupGeometry() {
     cubeVao.release();
 
     // Arrow
-    GLfloat arrowVertices[] = {
+    arrowVertices = {
         -0.05f, 0.0f, 0.85f,
         0.05f, 0.0f, 0.85f,
         0.0f,  0.05f, 0.85f,
@@ -112,7 +112,7 @@ void Gizmo::setupGeometry() {
 
     arrowVao.bind();
     arrowVbo.bind();
-    glBufferData(GL_ARRAY_BUFFER, sizeof(arrowVertices), arrowVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, arrowVertices.size() * sizeof(GLfloat), arrowVertices.data(), GL_STATIC_DRAW);
 
     // Position attribute
     glEnableVertexAttribArray(0);
@@ -127,7 +127,6 @@ void Gizmo::draw() {
     shaderProgram->bind();
 
     glDisable(GL_DEPTH_TEST);
-
 
     switch (transformMode) {
     case Translate:
@@ -200,7 +199,7 @@ void Gizmo::drawTranslation() {
 void Gizmo::drawArrow() {
     arrowVao.bind();
 
-    glDrawArrays(GL_TRIANGLES, 0, 54);
+    glDrawArrays(GL_TRIANGLES, 0, arrowVertices.size());
 
     arrowVao.release();
 }
@@ -280,7 +279,7 @@ void Gizmo::drawScale() {
 void Gizmo::drawCube() {
     cubeVao.bind();
 
-    glDrawArrays(GL_QUADS, 0, 34);
+    glDrawArrays(GL_QUADS, 0, cubeVertices.size());
 
     cubeVao.release();
 }

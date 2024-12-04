@@ -6,15 +6,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     resize(1280, 720);
     QSplitter *splitter = new QSplitter(this);
 
-    // menu bar
-    InitMenuBar();
-
     // Layout
     QWidget *rightContainer = new QWidget(this);
     QVBoxLayout *rightLayout = new QVBoxLayout(rightContainer);
 
     // OpenGL Widget Main Scene
-    GLWidget *glWidget = new GLWidget(this);
+    glWidget = new GLWidget(this);
     QSurfaceFormat format = QSurfaceFormat::defaultFormat();
     format.setSamples(16);
     glWidget->setFormat(format);
@@ -28,11 +25,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     connect(toolBar, &ToolBar::toolSelected, glWidget, &GLWidget::activateTool);
 
     // Hierarchy
-    Hierarchy *hierarchy = new Hierarchy(this);
+    hierarchy = new Hierarchy(this);
     connect(glWidget, &GLWidget::updateNode, hierarchy, &Hierarchy::updateNode);
     connect(glWidget, &GLWidget::NodeSelected, hierarchy, &Hierarchy::selectNode);
     // Inspector
-    Inspector *inspector = new Inspector(this);
+    inspector = new Inspector(this);
     connect(hierarchy, &Hierarchy::nodeSelected, inspector, &Inspector::updateTransform);
     connect(toolBar, &ToolBar::toolSelected, inspector, &Inspector::setToolInfo);
     
@@ -41,6 +38,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     connect(hierarchy, &Hierarchy::nodeSelected, glWidget, &GLWidget::setCurrentNode);
 
+    // menu bar
+    InitMenuBar();
 
     // QSplitter for resize
     splitter->addWidget(rightContainer);
@@ -51,11 +50,17 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     setCentralWidget(splitter);
 }
 
-MainWindow::~MainWindow() {}
-
 void MainWindow::InitTools() {
-    Tool move = Tool("Move", QIcon("src/app/icons/move.svg"), ToolType::MOVE);
-    toolBar->addTool(move);
+
+    // Gizmo
+    Tool gizmo = Tool("Gizmo", QIcon("src/app/icons/gizmo/gizmo.svg"), ToolType::GIZMO);
+    Tool move = Tool("Move", QIcon("src/app/icons/gizmo/move.svg"), ToolType::MOVE);
+    Tool rotate = Tool("Rotate", QIcon("src/app/icons/gizmo/rotate.svg"), ToolType::ROTATE);
+    Tool scale = Tool("Scale", QIcon("src/app/icons/gizmo/scale.svg"), ToolType::SCALE);
+    gizmo.addSubTool(move);
+    gizmo.addSubTool(rotate);
+    gizmo.addSubTool(scale);
+    toolBar->addTool(gizmo);
 
     // Selection
     Tool select = Tool("Select", QIcon("src/app/icons/select/select_set.svg"), ToolType::SELECT);
@@ -83,6 +88,7 @@ void MainWindow::InitMenuBar() {
     QAction *openAction = fileMenu->addAction("Open");
     QAction *saveAction = fileMenu->addAction("Save");
     QAction *exitAction = fileMenu->addAction("Exit");
+    connect(newAction, &QAction::triggered, glWidget, &GLWidget::clearScene);
     connect(exitAction, &QAction::triggered, this, &QMainWindow::close);
 
     // Edit menu

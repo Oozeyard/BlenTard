@@ -39,6 +39,7 @@ public:
     QSize sizeHint() const override;
 
     void highlightNode(Node *node);
+    void clearScene();
 
 public slots:
     void activateTool(Tool* tool);
@@ -64,6 +65,7 @@ private:
     
     void createCube();
     void createSphere();
+    void createSuzanne();
     void loadCustomModel();
 
     // Manage transformation

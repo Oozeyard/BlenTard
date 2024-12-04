@@ -14,6 +14,7 @@ Inspector::Inspector(QWidget *parent)
   // Transform info
   // Position
   QGroupBox *positionGroup = new QGroupBox("Position");
+  positionGroup->setStyleSheet("QGroupBox { color: grey; }");
   QHBoxLayout *positionLayout = new QHBoxLayout;
   positionLayout->addWidget(posXSpinBox);
   positionLayout->addWidget(posYSpinBox);
@@ -23,6 +24,7 @@ Inspector::Inspector(QWidget *parent)
 
   // Rotation
   QGroupBox *rotationGroup = new QGroupBox("Rotation");
+  rotationGroup->setStyleSheet("QGroupBox { color: grey; }");
   QHBoxLayout *rotationLayout = new QHBoxLayout;
   rotationLayout->addWidget(rotXSpinBox);
   rotationLayout->addWidget(rotYSpinBox);
@@ -32,6 +34,7 @@ Inspector::Inspector(QWidget *parent)
 
   // Scale
   QGroupBox *scaleGroup = new QGroupBox("Scale");
+  scaleGroup->setStyleSheet("QGroupBox { color: grey; }");
   QHBoxLayout *scaleLayout = new QHBoxLayout;
   scaleLayout->addWidget(scaleXSpinBox);
   scaleLayout->addWidget(scaleYSpinBox);
