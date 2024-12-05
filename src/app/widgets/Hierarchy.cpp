@@ -7,7 +7,7 @@ Hierarchy::Hierarchy(QWidget *parent)
     treeWidget->setHeaderLabel("Scene Hierarchy");
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(treeWidget);
-    setLayout(layout);    
+    setLayout(layout);
 
     connect(treeWidget, &QTreeWidget::itemClicked, this, &Hierarchy::onItemClicked);
 }
@@ -80,4 +80,8 @@ void Hierarchy::onItemClicked(QTreeWidgetItem *item, int column) {
 
 void Hierarchy::selectNode(Node *node) {
     emit nodeSelected(node);
+}
+
+void Hierarchy::keyPressEvent(QKeyEvent *event) {
+    emit keyPressed(event);
 }

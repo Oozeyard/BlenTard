@@ -5,6 +5,8 @@ Inspired on https://github.com/jxfwinter/qt-material-stylesheet
 Company: GTRONICK
 Last updated: 04/12/2018, 15:00.
 Available at: https://github.com/GTRONICK/QSS/blob/master/MaterialDark.qss
+
+Updated for BlenTard
 */
 QMainWindow {
 	background-color:#1e1d23;
@@ -31,7 +33,6 @@ QPlainTextEdit {
 	color: #a9b7c6;
 }
 QPushButton{
-	border-style: solid;
 	border-top-color: transparent;
 	border-right-color: transparent;
 	border-left-color: transparent;
@@ -47,7 +48,6 @@ QPushButton::default{
 	border-top-color: transparent;
 	border-right-color: transparent;
 	border-left-color: transparent;
-	border-bottom-color: #04b97f;
 	border-width: 1px;
 	color: #a9b7c6;
 	padding: 2px;
@@ -58,7 +58,7 @@ QToolButton {
 	border-top-color: transparent;
 	border-right-color: transparent;
 	border-left-color: transparent;
-	border-bottom-color: #04b97f;
+	border-bottom-color: #d85b08;
 	border-bottom-width: 1px;
 	border-style: solid;
 	color: #a9b7c6;
@@ -416,4 +416,56 @@ QSlider::sub-page:horizontal {
 }
 QSlider::sub-page:vertical {
     background: #04b97f;
+}
+
+QListWidget {
+    background-color: #303030;
+}
+
+QScrollArea {
+    background: transparent;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: #575757;
+    width: 12px;
+    border-radius: 6px;
+}
+
+QScrollBar:horizontal {
+    border: none;
+    background: #575757;
+    height: 12px;
+    border-radius: 6px;
+}
+
+QScrollBar::handle:vertical {
+    background: #2c2c2c;
+    border-radius: 6px;
+    min-height: 20px;
+}
+
+QScrollBar::handle:horizontal {
+    background: #2c2c2c;
+    border-radius: 6px;
+    min-width: 20px;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    background: none;
+}
+
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical,
+QScrollBar::left-arrow:horizontal, QScrollBar::right-arrow:horizontal {
+    background: none;
+}
+
+QScrollBar::handle:vertical:hover, QScrollBar::handle:horizontal:hover {
+    background: #2c2c2c;
+}
+
+QScrollArea QWidget {
+    background-color: #353438;
 }

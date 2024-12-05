@@ -110,8 +110,11 @@ void ToolBar::mousePressEvent(QMouseEvent *event) {
             }
         }
 
+
         topLeft += QPoint(0, 40); // check next tool
     }
+
+    QCoreApplication::sendEvent(parent(), event);
 }
 
 void ToolBar::setSelectedTool(Tool *tool) {

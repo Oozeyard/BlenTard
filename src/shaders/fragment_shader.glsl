@@ -48,7 +48,6 @@ void main() {
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = material.specular * spec;
 
-
     if (selected) {
         FragColor = vec4(1.0, 0.5, 0.0, 1.0);
         return;

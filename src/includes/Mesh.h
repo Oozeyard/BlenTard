@@ -43,6 +43,13 @@ struct Material
     float roughness;
 
     QVector<Texture> textures;
+
+    void setAlbedo(const QVector3D& color) { albedo = color; }
+    void setSpecular(const QVector3D& color) { specular = color; }
+    void setEmissive(const QVector3D& color) { emissive = color; }
+    void setShininess(float value) { shininess = value; }
+    void setMetalness(float value) { metalness = value; }
+    void setRoughness(float value) { roughness = value; }
 };
 
 class Mesh : public Node, protected QOpenGLFunctions 
@@ -60,9 +67,9 @@ public:
 
     void draw(QOpenGLShaderProgram* program);
 
-    const QVector<Vertex>& vertices() const { return m_vertices; }
-    const QVector<uint>& indices() const { return m_indices; }
-    const Material& material() const { return m_material; }
+    const QVector<Vertex>& getVertices() const { return m_vertices; }
+    const QVector<uint>& getIndices() const { return m_indices; }
+    Material& getMaterial() { return m_material; }
 
     // tools
     void subdivide();

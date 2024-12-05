@@ -44,6 +44,7 @@ public:
 public slots:
     void activateTool(Tool* tool);
     void setCurrentNode(Node *node) { m_currentNode = node; }
+    void keyPressed(QKeyEvent *event);
 
 signals:
     void updateNode(Node *rootNode);

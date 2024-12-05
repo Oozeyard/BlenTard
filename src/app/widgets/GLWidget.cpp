@@ -122,9 +122,6 @@ void GLWidget::paintGL()
         m_gizmoProgram->release();
     }
 
-
-    std::cout << "\r" << (int)m_activeTransforms << std::flush;
-
     update();
 }
 
@@ -182,6 +179,10 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
         break;
     }
 
+}
+
+void GLWidget::keyPressed(QKeyEvent *event) {
+    keyPressEvent(event);
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *event)

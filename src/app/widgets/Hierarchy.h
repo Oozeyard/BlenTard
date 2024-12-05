@@ -20,6 +20,7 @@ public:
 
 signals:
     void nodeSelected(Node *node);
+    void keyPressed(QKeyEvent *event);
 
 public slots:
     void updateNode(Node *node);
@@ -30,4 +31,6 @@ private:
     QTreeWidget *treeWidget;
     Node *rootNode { nullptr };
     QSet<Node *> selectedNodes;
+
+    void keyPressEvent(QKeyEvent *event) override; 
 };

@@ -38,6 +38,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
     connect(hierarchy, &Hierarchy::nodeSelected, glWidget, &GLWidget::setCurrentNode);
 
+    // connect key press event (TOFIX)
+    connect(hierarchy, &Hierarchy::keyPressed, glWidget, &GLWidget::keyPressed);
+    connect(inspector, &Inspector::keyPressed, glWidget, &GLWidget::keyPressed);
+
     // menu bar
     InitMenuBar();
 
@@ -45,7 +49,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     splitter->addWidget(rightContainer);
 
     splitter->setStretchFactor(0, 8);
-    splitter->setStretchFactor(1, 2);
 
     setCentralWidget(splitter);
 }

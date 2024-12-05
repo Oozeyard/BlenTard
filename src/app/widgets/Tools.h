@@ -8,7 +8,7 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QPainterPath>
-#include <iostream>
+#include <QCoreApplication>
 
 #include <iostream>
 
