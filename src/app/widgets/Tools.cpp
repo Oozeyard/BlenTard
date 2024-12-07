@@ -53,6 +53,7 @@ void ToolBar::paintEvent(QPaintEvent *event) {
 
        topLeft += QPoint(0, 40);
     }
+    painter.end();
 
 }
 

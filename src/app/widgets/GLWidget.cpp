@@ -15,20 +15,22 @@ GLWidget::GLWidget(QWidget *parent)
         doAction(actionType);
     });
 
+    // Painter
+    m_glPainter = new GLPainter(this);
 }
 
 GLWidget::~GLWidget()
 {
     makeCurrent();
-    if (m_shaderProgram) delete m_shaderProgram;
-    if (m_shaderGridOverlayProgram) delete m_shaderGridOverlayProgram;
-    if (m_shaderSelectionProgram) delete m_shaderSelectionProgram;
-    if (m_gridOverlay) delete m_gridOverlay;
-    if (m_rootNode) delete m_rootNode;
-    if (m_camera) delete m_camera;
-    if (m_contextMenu) delete m_contextMenu;
-    if (m_gizmo) delete m_gizmo;
-    if (m_selectionFBO) delete m_selectionFBO;
+    delete m_shaderProgram;
+    delete m_shaderGridOverlayProgram;
+    delete m_shaderSelectionProgram;
+    delete m_gridOverlay;
+    delete m_rootNode;
+    delete m_camera;
+    delete m_contextMenu;
+    delete m_gizmo;
+    delete m_selectionFBO;
     doneCurrent();
 }
 
@@ -120,17 +122,15 @@ void GLWidget::paintGL()
     m_gizmo->draw();
     m_gizmoProgram->release();
 
-    std::cout << "\r" << (int)m_activeTransforms << std::flush;
-
     update();
 }
-
 
 void GLWidget::resizeGL(int w, int h)
 {
     glViewport(0, 0, w, h);  // Viewport
     m_camera->setAspect(static_cast<float>(w) / static_cast<float>(h));
     initializeSelectionBuffer();  // Resize the selection buffer
+    m_glPainter->resizePainter(w, h);
 }
 
 void GLWidget::keyPressEvent(QKeyEvent *event)
@@ -172,7 +172,16 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
             grabNodeSelected();
         }
         break;
-    case Qt::Key_Tab:
+    case Qt::Key_E:
+        std::cout << "Edit Mode" << std::endl;
+        if (m_currentNode) {
+            if (m_currentNode->isEditMode()) {
+                m_currentNode->setEditMode();
+            } else {
+                m_rootNode->disableAllEditMode();
+                m_currentNode->setEditMode();
+            }
+        }
         break;
 
     default:
@@ -193,15 +202,23 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
     }
 
     // Selection node
-    if (event->buttons() & Qt::LeftButton) {
+    if (event->buttons() & Qt::LeftButton && !m_isEditMode) {
+
+        // Reset gizmo
+        m_gizmo->setMode(TransformMode::None);
+        
+    }
+
+    // Edit mode
+    if (event->buttons() & Qt::LeftButton && m_isEditMode) {
+        std::cout << "Edit Mode" << std::endl;
 
         // Reset gizmo
         m_gizmo->setMode(TransformMode::None);
 
-        QPoint pos = event->pos();
-        
-        makeCurrent();
-        renderSelectionBuffer();
+        // TODO Selection Vertices
+        /*makeCurrent();
+        renderVerticesSelectionBuffer();
 
         int id = getObjectIdAtMouse(pos);
         doneCurrent();
@@ -219,8 +236,8 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
         } else {
             m_rootNode->deselectAll();
             emit NodeSelected(nullptr);
-        }
-        
+        }*/
+
     }
 
 }
@@ -230,6 +247,46 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event)
     // Camera input
     m_camera->mouseMoveEvent(event);
 
+}
+
+void GLWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+
+    // If a transformation is in progress, do not process the mouse event
+    if (m_transformMode != TransformMode::None) {
+        m_nbTotalActiveTransform.store(m_activeTransforms);
+        return;
+    }
+
+    if (event->button() == Qt::LeftButton) {
+        m_selectedRect = m_glPainter->getSelectionRect();
+
+        makeCurrent();
+        renderNodeSelectionBuffer();
+
+        QVector<int> ids = getObjectsIdInRect(m_selectedRect);
+        doneCurrent();
+
+        qDebug() << "Selected ids: " << ids;
+
+        if (!ids.isEmpty()) { // If the id is not 0, a node has been selected
+            m_rootNode->deselectAll();
+            for (int id : ids) {
+                Node* node = m_rootNode->getNodeById(id);
+                if (node) {
+                    // std::cout << "Node selected: " << node->getName().toStdString() << std::endl;
+                    node->setSelected();
+                    m_currentNode = node;
+                    m_currentNodeTransform = node->transform;
+                    emit NodeSelected(node);
+                }
+            }
+        } else {
+            m_rootNode->deselectAll();
+            emit NodeSelected(nullptr);
+        }
+
+    }
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event)
@@ -328,6 +385,7 @@ void GLWidget:: loadCustomModel()
 void GLWidget::initializeSelectionBuffer() 
 {
     QSize size(width(), height());
+    
     m_selectionFBO = new QOpenGLFramebufferObject(size, QOpenGLFramebufferObject::CombinedDepthStencil);
 
     m_selectionTexture = m_selectionFBO->texture(); // Get the texture from the FBO
@@ -338,7 +396,7 @@ void GLWidget::initializeSelectionBuffer()
 }
 
 
-void GLWidget::renderSelectionBuffer() 
+void GLWidget::renderNodeSelectionBuffer() 
 {
     m_selectionFBO->bind(); // Bind the framebuffer
 
@@ -389,6 +447,40 @@ int GLWidget::getObjectIdAtMouse(const QPoint& mousePosition)
     return colorToID(pixel[0], pixel[1], pixel[2]);
 }
 
+QVector<int> GLWidget::getObjectsIdInRect(const QRect &rect)
+{
+    QRect validRect = rect.intersected(QRect(0, 0, width(), height()));
+    if (validRect.isEmpty() || validRect.width() == 0 || validRect.height() == 0) { // Invalid rect
+        return QVector<int>(); 
+    }
+    QVector<int> ids;
+
+    QPoint topLeft = validRect.topLeft();
+    int x = topLeft.x();
+    int y = height() - topLeft.y(); // Invert the y coordinate
+    int widthRect = validRect.width();
+    int heightRect = validRect.height();
+
+    widthRect = qMax(0, qMin(widthRect, width() - x));
+    heightRect = qMax(0, qMin(heightRect, y));
+
+    QVector<unsigned char> pixels(widthRect * heightRect * 3, 0);
+
+    m_selectionFBO->bind();
+    glFlush();
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadPixels(x, y - heightRect + 1, widthRect, heightRect, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+    m_selectionFBO->release();
+
+    for (int i = 0; i < pixels.size(); i += 3) {
+        int id = colorToID(pixels[i], pixels[i + 1], pixels[i + 2]);
+        if (id != 0 && !ids.contains(id)) ids.push_back(id);
+    }
+
+    return ids;
+}
+
+
 void GLWidget::grabNodeSelected() 
 {
     if (!m_currentNode) return;
@@ -408,9 +500,7 @@ void GLWidget::grabNodeSelected()
         QCoreApplication::processEvents();
 
         if (m_transformMode != TransformMode::Translate || m_activeTransforms < m_nbTotalActiveTransform) {
-            const char* modes[] = {"Grab", "Rotate", "Scale", "None"};
-            std::cout << modes[m_transformMode] << "Grab" << std::endl;
-            m_currentNode->transform.position = initialPosition;
+            m_lastNodeTransform.position = initialPosition;
             break;
         }
         
@@ -430,7 +520,8 @@ void GLWidget::grabNodeSelected()
         // Undo translation
         if (QApplication::mouseButtons() & Qt::RightButton) {
             m_currentNode->transform.position = initialPosition;
-            std::cout << "Translation canceled" << std::endl;
+            m_lastNodeTransform.position = initialPosition;
+            // std::cout << "Translation canceled" << std::endl;
             break;
         }
     }
@@ -463,9 +554,7 @@ void GLWidget::scaleNodeSelected()
         QCoreApplication::processEvents();
 
         if (m_transformMode != TransformMode::Scale || m_activeTransforms < m_nbTotalActiveTransform) {
-            const char* modes[] = {"Grab", "Rotate", "Scale", "None"};
-            std::cout << modes[m_transformMode] << "Scale" << std::endl;
-            m_currentNode->transform.scale = initialScale;
+            m_lastNodeTransform.scale = initialScale;
             break;
         }
 
@@ -481,7 +570,8 @@ void GLWidget::scaleNodeSelected()
         // Undo scaling
         if (QApplication::mouseButtons() & Qt::RightButton) {
             m_currentNode->transform.scale = initialScale;
-            std::cout << "Scaling canceled" << std::endl;
+            m_lastNodeTransform.scale = initialScale;
+            // std::cout << "Scaling canceled" << std::endl;
             break;
         }
 
@@ -509,9 +599,7 @@ void GLWidget::rotateNodeSelected()
         QCoreApplication::processEvents();
 
         if (m_transformMode != TransformMode::Rotate || m_activeTransforms < m_nbTotalActiveTransform) {
-            const char* modes[] = {"Grab", "Rotate", "Scale", "None"};
-            std::cout << modes[m_transformMode] << "Rotate" << std::endl;
-            m_currentNode->transform.setRotationEuler(initialRotation);
+            m_lastNodeTransform.setRotationEuler(initialRotation);
             break;
         }
 
@@ -529,7 +617,8 @@ void GLWidget::rotateNodeSelected()
         // Undo rotation
         if (QApplication::mouseButtons() & Qt::RightButton) {
             m_currentNode->transform.setRotationEuler(initialRotation);
-            std::cout << "Rotation canceled" << std::endl;
+            m_lastNodeTransform.setRotationEuler(initialRotation);
+            // std::cout << "Rotation canceled" << std::endl;
             break;
         }
     }

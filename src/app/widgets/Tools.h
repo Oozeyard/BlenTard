@@ -8,7 +8,6 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QPainterPath>
-#include <iostream>
 
 #include <iostream>
 
@@ -64,6 +63,7 @@ public:
     Tool* getSelectedTool() {return selectedTool;}
     void setSelectedTool(Tool *tool);
 
+protected:
     // Events
     void mousePressEvent(QMouseEvent *event) override;
     //void mouseReleaseEvent(QMouseEvent *event) override;

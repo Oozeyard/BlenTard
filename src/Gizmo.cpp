@@ -127,6 +127,8 @@ void Gizmo::draw() {
     shaderProgram->bind();
 
     glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    
 
 
     switch (transformMode) {
@@ -145,6 +147,7 @@ void Gizmo::draw() {
         break;
     }
 
+    glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
     shaderProgram->release();
@@ -280,7 +283,7 @@ void Gizmo::drawScale() {
 void Gizmo::drawCube() {
     cubeVao.bind();
 
-    glDrawArrays(GL_QUADS, 0, 34);
+    glDrawArrays(GL_QUADS, 0, 24);
 
     cubeVao.release();
 }

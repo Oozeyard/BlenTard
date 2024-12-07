@@ -95,14 +95,24 @@ void Mesh::draw(QOpenGLShaderProgram* program)
     
     glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
 
+    // Draw wireframe if selected
     if (m_selected) {
         program->setUniformValue("selected", true);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glLineWidth(2.0f); 
         glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, nullptr);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
+    } 
     program->setUniformValue("selected", false);
+
+    // Draw vertices if in edit mode
+    if (m_editMode) {
+        program->setUniformValue("editMode", true);
+        glPointSize(5.0f);
+        glDrawArrays(GL_POINTS, 0, m_vertices.size());
+    }
+    program->setUniformValue("editMode", false);
+
 
     // Débind textures
     for (int i = 0; i < m_material.textures.size(); i++) {

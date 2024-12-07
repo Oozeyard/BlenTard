@@ -19,7 +19,9 @@ uniform int numDiffuseTextures; // Number of diffuse textures
 uniform int numNormalTextures; // Number of normal textures
 uniform int numMetalicTextures; // Number of normal textures
 uniform int numRoughnessTextures; // Number of normal textures
+
 uniform bool selected;
+uniform bool editMode;
 
 in vec3 FragPos;
 in vec3 Normal;
@@ -51,6 +53,11 @@ void main() {
 
     if (selected) {
         FragColor = vec4(1.0, 0.5, 0.0, 1.0);
+        return;
+    }
+
+    if (editMode) {
+        FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         return;
     }
 

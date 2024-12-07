@@ -13,7 +13,8 @@
 #include <QFileDialog>
 #include <QApplication>
 #include <QCoreApplication>
-#include <GL/gl.h>
+#include <QRect>
+// #include <GL/gl.h>
 
 #include "Node.h"
 #include "Model.h"
@@ -24,6 +25,7 @@
 #include "Utils.h"
 #include "Shader.h"
 #include "Gizmo.h"
+#include "GLPainter.h"
 
 #include <iostream>
 
@@ -55,6 +57,7 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
 
     void contextMenuEvent(QContextMenuEvent *event) override;
@@ -100,12 +103,16 @@ private:
     Transform m_currentNodeTransform, m_lastNodeTransform;
     std::atomic<int> m_activeTransforms{0}, m_nbTotalActiveTransform{0}; // Number of active transformations
 
-    // Selection (Color picking)
+    // Selection (Color picking)  
+    GLPainter *m_glPainter;
+    QRect m_selectedRect;
     void initializeSelectionBuffer();
-    void renderSelectionBuffer();
+    void renderNodeSelectionBuffer();
     int getObjectIdAtMouse(const QPoint &pos);
+    QVector<int> getObjectsIdInRect(const QRect &rect);
     QOpenGLFramebufferObject* m_selectionFBO;  // Framebuffer for selection
     GLuint m_selectionTexture;                 // Renderbuffer Object for depth testing
+
 };
 
 
