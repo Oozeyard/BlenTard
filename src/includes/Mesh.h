@@ -14,6 +14,7 @@
 
 #include "Node.h"
 #include "Utils.h"
+#include "stb_image.h"
 
 #include <iostream>
 
@@ -83,16 +84,18 @@ public:
     QHash<int, QSet<int>> computeAdjacencyList();
     void unifySharedVertices();
 
+    uint textureFromFile(const QString& path, const QString& directory);
+
 protected:
     QVector<Vertex> m_vertices;
     QVector<uint> m_indices;
     Material m_material;
 private:
 
+    void setupMesh();
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vertexBuffer;
     QOpenGLBuffer m_indexBuffer;
 
-    void setupMesh();
 };
 

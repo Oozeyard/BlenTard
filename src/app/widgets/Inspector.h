@@ -31,13 +31,16 @@ signals:
 public slots:
     void setToolInfo(Tool *tool);
 
-    void updateTransform(Node *node);
+    void updateNode(Node *node);
     void onPositionChanged();
     void onRotationChanged();
     void onScaleChanged();
 
 private:
     void keyPressEvent(QKeyEvent *event) override;
+
+    void updateTransform(Node *node);
+    void updateMaterial(Node *node);
 
     Node *convertToMesh(Node* node);
 

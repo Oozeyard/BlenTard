@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     connect(glWidget, &GLWidget::NodeSelected, hierarchy, &Hierarchy::selectNode);
     // Inspector
     inspector = new Inspector(this);
-    connect(hierarchy, &Hierarchy::nodeSelected, inspector, &Inspector::updateTransform);
+    connect(hierarchy, &Hierarchy::nodeSelected, inspector, &Inspector::updateNode);
     connect(toolBar, &ToolBar::toolSelected, inspector, &Inspector::setToolInfo);
     
     rightLayout->addWidget(hierarchy);

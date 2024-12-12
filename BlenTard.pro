@@ -62,3 +62,5 @@ win32: INCLUDEPATH += ./libs/assimp-5.4.3/include
 unix: LIBS += -lGL -ldl -lpthread -lassimp
 win32: LIBS += -lopengl32 -lgdi32 -L./libs/assimp-5.4.3/bin -lassimp
 
+# CONFIG+=debug
+

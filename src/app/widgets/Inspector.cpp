@@ -1,4 +1,5 @@
 #include "Inspector.h"
+#include "stb_image.h"
 
 Inspector::Inspector(QWidget *parent) 
     : QWidget(parent),
@@ -8,6 +9,7 @@ Inspector::Inspector(QWidget *parent)
       posXSpinBox(new QDoubleSpinBox), posYSpinBox(new QDoubleSpinBox), posZSpinBox(new QDoubleSpinBox),
       rotXSpinBox(new QDoubleSpinBox), rotYSpinBox(new QDoubleSpinBox), rotZSpinBox(new QDoubleSpinBox),
       scaleXSpinBox(new QDoubleSpinBox), scaleYSpinBox(new QDoubleSpinBox), scaleZSpinBox(new QDoubleSpinBox) {
+
     
   QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
@@ -217,6 +219,11 @@ void Inspector::toggleMaterial(bool checked) {
     removeTextureButton->setVisible(checked);
 }
 
+void Inspector::updateNode(Node *node) {
+  updateTransform(node);
+  updateMaterial(node);
+}
+
 void Inspector::updateTransform(Node *node) {
 
   if (!node) {
@@ -268,6 +275,26 @@ void Inspector::updateTransform(Node *node) {
   scaleYSpinBox->setValue(transform.scale.y());
   scaleZSpinBox->setValue(transform.scale.z());
 
+}
+
+void Inspector::updateMaterial(Node *node) {
+  Mesh* mesh = dynamic_cast<Mesh*>(node);
+  if (!mesh) return;
+
+  // block signals to prevent wrong values
+  QSignalBlocker blockerShininess(shininessSpinBox);
+  QSignalBlocker blockerMetalness(metalnessSpinBox);
+  QSignalBlocker blockerRoughness(roughnessSpinBox);
+
+  shininessSpinBox->setValue(mesh->getMaterial().shininess);
+  metalnessSpinBox->setValue(mesh->getMaterial().metalness);
+  roughnessSpinBox->setValue(mesh->getMaterial().roughness);
+
+  // Textures
+  texturesListWidget->clear();
+  for (const Texture& texture : mesh->getMaterial().textures) {
+    texturesListWidget->addItem(texture.path);
+  }
 }
 
 void Inspector::onPositionChanged() {
@@ -333,9 +360,12 @@ void Inspector::onAddTexture() {
     QString fileName = QFileDialog::getOpenFileName(this, "Add Texture", "", "Image Files (*.png *.jpg *.bmp)");
     Mesh* mesh = dynamic_cast<Mesh*>(currentNode);
     if (!fileName.isEmpty() && mesh) {
+
         // Add to material
         Texture newTexture;
         newTexture.path = fileName;
+        newTexture.type = "texture_diffuse";
+        newTexture.id = mesh->textureFromFile(fileName, QFileInfo(fileName).absolutePath());
         mesh->getMaterial().textures.push_back(newTexture);
 
         // Update UI

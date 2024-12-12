@@ -303,6 +303,14 @@ void GLWidget::doAction(const ActionType &actionType) {
     case ADD_CUSTOM_MODEL: 
         loadCustomModel();
         break;
+    case UNIFY_MESH:
+    {
+        Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+        if (mesh) {
+            mesh->unifySharedVertices();
+        }
+        break;
+    }
     case SUBDIVIDE:
     {
         Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);

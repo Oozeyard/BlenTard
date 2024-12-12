@@ -10,6 +10,9 @@ Context::Context(QWidget *parent) : QMenu(parent) {
     QAction *addCustomAction = meshMenu->addAction("Custom Model");
 
     addSeparator();
+    QAction *unifyMeshAction = addAction("Unify Mesh");
+
+    addSeparator();
     QAction *subdivideAction = addAction("Subdivide");
     QMenu *SmoothMenu = addMenu("Smooth");
     QAction *LaplacianSmoothAction = SmoothMenu->addAction("Laplacian");
@@ -31,6 +34,9 @@ Context::Context(QWidget *parent) : QMenu(parent) {
     });
     connect(addCustomAction, &QAction::triggered, [this]() {
         emit actionTriggered(ADD_CUSTOM_MODEL);
+    });
+    connect(unifyMeshAction, &QAction::triggered, [this]() {
+        emit actionTriggered(UNIFY_MESH);
     });
     connect(subdivideAction, &QAction::triggered, [this]() {
         emit actionTriggered(SUBDIVIDE);
