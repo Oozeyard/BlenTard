@@ -100,7 +100,7 @@ private:
 
     // Interactive transformation
     TransformMode m_transformMode { TransformMode::None };
-    Transform m_currentNodeTransform, m_lastNodeTransform;
+    Transform m_initialNodeTransform, m_lastNodeTransform;
     std::atomic<int> m_activeTransforms{0}, m_nbTotalActiveTransform{0}; // Number of active transformations
 
     // Selection (Color picking)  
