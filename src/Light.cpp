@@ -24,6 +24,7 @@ void Light::initializeShadowMap(int width, int height) {
     QOpenGLFramebufferObjectFormat format;
     format.setAttachment(QOpenGLFramebufferObject::Depth);
     format.setTextureTarget(GL_TEXTURE_2D);
+    format.setInternalTextureFormat(GL_DEPTH_COMPONENT24);
 
     m_shadowFBO = new QOpenGLFramebufferObject(width, height, format);
     m_shadowTexture = m_shadowFBO->texture();
@@ -31,6 +32,12 @@ void Light::initializeShadowMap(int width, int height) {
 
 void Light::renderShadowMap(Shader* shader, Node* root) {
     if (!m_shadowFBO) return;
+
+    // Set up the OpenGL state for rendering the shadow map
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
 
     // Bind the shadow framebuffer object
     m_shadowFBO->bind();
@@ -66,25 +73,26 @@ void Light::renderShadowMap(Shader* shader, Node* root) {
 
     // Render the scene here for shadow map generation
     for (Node* child : root->getChildren()) {
-        qDebug() << "Rendering shadow map for child:" << child->getName();
+        // qDebug() << "Rendering child in shadow pass:" << child->getName() << "at position:" << child->getTransform().position;
         child->draw(shader);
     }
 
     glBindTexture(GL_TEXTURE_2D, m_shadowTexture);
-    qDebug() << "Shadow texture ID:" << m_shadowTexture;
 
-    printShadowMap();
+    // printShadowMap();
 
     m_shadowFBO->release();
 }
 
 void Light::draw(QOpenGLShaderProgram* program) {
     // Pass light properties to the shader
+    program->bind();
     program->setUniformValue("light.position", transform.position);
     program->setUniformValue("light.color", m_color);
     program->setUniformValue("light.intensity", m_intensity);
     program->setUniformValue("lightSpaceMatrix", getLightSpaceMatrix());
     program->setUniformValue("shadowMap", 1);
+    program->release();
 
     // Bind the shadow map texture
     glActiveTexture(GL_TEXTURE1);
@@ -93,7 +101,10 @@ void Light::draw(QOpenGLShaderProgram* program) {
 
 void Light::printShadowMap() {
     std::vector<float> shadowData(m_shadowWidth * m_shadowHeight);
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_FLOAT, shadowData.data());
+    glReadPixels(0, 0, m_shadowWidth, m_shadowHeight, GL_DEPTH_COMPONENT, GL_FLOAT, shadowData.data());
+
+    auto minMax = std::minmax_element(shadowData.begin(), shadowData.end());
+    qDebug() << "Depth values: Min =" << *minMax.first << ", Max =" << *minMax.second;
 
     // Convert depth values to a format suitable for saving as an image
     std::vector<unsigned char> imageData(m_shadowWidth * m_shadowHeight);
