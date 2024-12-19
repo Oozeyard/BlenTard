@@ -7,10 +7,17 @@
 #include <iostream>
 
 enum ActionType {
+    // Mesh
     ADD_CUBE,
     ADD_SPHERE,
     ADD_SUZANNE,
     ADD_CUSTOM_MODEL,
+
+    // Light
+    ADD_DIRECTIONAL_LIGHT,
+    ADD_POINT_LIGHT,
+    ADD_SPOT_LIGHT,
+
     UNIFY_MESH,
     SUBDIVIDE,
     LAPLACIAN_SMOOTH,

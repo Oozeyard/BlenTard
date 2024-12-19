@@ -28,6 +28,14 @@ enum ToolType {
     VERTEX_SELECT,
     FACE_SELECT,
 
+    // Shading
+    SHADING,
+    RENDER,
+    TEXTURE,
+    SOLID,
+    WIRE,
+    
+
     ORTHOGRAPHIC
 };
 
