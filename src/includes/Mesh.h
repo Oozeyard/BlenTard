@@ -42,6 +42,15 @@ struct Material
     QVector<Texture> textures;
 };
 
+enum class DrawSelectionMode 
+{
+    None,
+    UseCulling,
+    Objects,
+    Vertices,
+    Faces
+};
+
 class Mesh : public Node, protected QOpenGLFunctions 
 {
     Q_OBJECT
@@ -61,6 +70,12 @@ public:
     const QVector<uint>& indices() const { return m_indices; }
     const Material& material() const { return m_material; }
 
+    void setDrawSelectionMode(DrawSelectionMode mode) { m_selectionMode = mode; }
+    void deselectAllVertices() { m_selectedVertices.fill(false); }
+    void selectVertex(int index) { m_selectedVertices[index] = true; }
+
+    void updateVertexPosition(int index, const QVector3D& position);
+
     void subdivide();
 
 
@@ -68,10 +83,18 @@ private:
     QVector<Vertex> m_vertices;
     QVector<uint> m_indices;
     Material m_material;
+    QVector<QVector3D> m_vertexColors;  
 
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vertexBuffer;
     QOpenGLBuffer m_indexBuffer;
+    QOpenGLBuffer m_colorBuffer;
+
+    DrawSelectionMode m_selectionMode { DrawSelectionMode::None };
+
+    // Selection
+    QVector<bool> m_selectedVertices;
+
 
     void setupMesh();
 };

@@ -92,8 +92,9 @@ void GLWidget::paintGL()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glEnable(GL_CULL_FACE);
+    // glDepthFunc(GL_LEQUAL);
+    // glEnable(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE);
 
     
     // light
@@ -169,8 +170,11 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
         if (m_currentNode) {
             m_currentNode->transform = m_lastNodeTransform = m_initialNodeTransform;
             m_transformMode = m_transformMode == TransformMode::Translate ? TransformMode::None : TransformMode::Translate;
-            m_gizmo->setMode(m_transformMode);
-            grabNodeSelected();
+            if (m_isEditMode) grabVerticesSelected();
+            else {
+                m_gizmo->setMode(m_transformMode);
+                grabNodeSelected();
+            }
         }
         break;
     case Qt::Key_E:
@@ -178,9 +182,16 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
         if (m_currentNode) {
             if (m_currentNode->isEditMode()) {
                 m_currentNode->setEditMode();
+                m_isEditMode = false;
             } else {
                 m_rootNode->disableAllEditMode();
                 m_currentNode->setEditMode();
+                m_isEditMode = true;
+                m_currentNode->setSelected();
+                Mesh *mesh = dynamic_cast<Mesh*>(m_currentNode);
+                if (mesh) {
+                    mesh->deselectAllVertices();
+                }
             }
         }
         break;
@@ -212,17 +223,8 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 
     // Edit mode
     if (event->buttons() & Qt::LeftButton && m_isEditMode) {
-        std::cout << "Edit Mode" << std::endl;
-
-        // Reset gizmo
-        m_gizmo->setMode(TransformMode::None);
-
-        // TODO Selection Vertices
-        /*makeCurrent();
-        renderVerticesSelectionBuffer();
-
-        int id = getObjectIdAtMouse(pos);
-        doneCurrent();
+       
+        /*
 
         if (id != 0) { // If the id is not 0, a node has been selected
             m_rootNode->deselectAll();
@@ -258,11 +260,14 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
         return;
     }
 
-    if (event->button() == Qt::LeftButton) {
+    if (event->button() == Qt::LeftButton && !m_isEditMode) {
         m_selectedRect = m_glPainter->getSelectionRect();
 
         makeCurrent();
         renderNodeSelectionBuffer();
+
+        // QImage image = m_selectionFBO->toImage();
+        // image.save("selection_buffer.png");
 
         QVector<int> ids = getObjectsIdInRect(m_selectedRect);
         doneCurrent();
@@ -286,7 +291,44 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
             m_rootNode->deselectAll();
             emit NodeSelected(nullptr);
         }
+    }
 
+    if (event->button() == Qt::LeftButton && m_isEditMode) {
+        std::cout << "Edit Mode" << std::endl;
+        m_selectedRect = m_glPainter->getSelectionRect();
+
+        // Reset gizmo
+        m_gizmo->setMode(TransformMode::None);
+
+        // TODO Selection Vertices
+        makeCurrent();
+        renderVerticesSelectionBuffer();
+
+        // QImage image = m_selectionFBO->toImage();
+        // image.save("selection_buffer.png");
+
+        QVector<int> ids = getObjectsIdInRect(m_selectedRect);
+        doneCurrent();
+
+        qDebug() << "Selected ids: " << ids;
+
+        Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+        if (mesh) {
+            if (!ids.isEmpty()) {
+                mesh->deselectAllVertices();
+                for (int id : ids) {
+                    mesh->selectVertex(id - 1);
+                    m_selectedVertexIndices.push_back(id - 1);
+                    m_initialNodeTransform = mesh->transform;
+                    m_lastNodeTransform = m_initialNodeTransform;
+                }
+            } else {
+                qDebug() << "Deselect all vertices";
+                mesh->deselectAllVertices();
+                m_selectedVertexIndices.clear();
+            }
+        }
+        
     }
 }
 
@@ -402,6 +444,9 @@ void GLWidget::renderNodeSelectionBuffer()
     m_selectionFBO->bind(); // Bind the framebuffer
 
     glEnable(GL_DEPTH_TEST); // Enable depth testing
+    // glEnable(GL_CULL_FACE); 
+    // glCullFace(GL_BACK);   
+    // glFrontFace(GL_CCW);  
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear the color buffer with black
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the color and depth buffer
 
@@ -410,19 +455,24 @@ void GLWidget::renderNodeSelectionBuffer()
     m_shaderSelectionProgram->setUniformValue("projection", m_camera->getProjectionMatrix());
     m_shaderSelectionProgram->setUniformValue("view", m_camera->getViewMatrix());
 
+
     for (Node* child : m_rootNode->getChildren()) {
         Model* model = dynamic_cast<Model*>(child);
         if (model) {
             for (Node* meshNode : model->getChildren()) {
                 Mesh* mesh = dynamic_cast<Mesh*>(meshNode);
                 if (mesh) {
+                    mesh->setDrawSelectionMode(DrawSelectionMode::Objects);
                     mesh->draw(m_shaderSelectionProgram); // Render with unique color
+                    mesh->setDrawSelectionMode(DrawSelectionMode::None);
                 }
             }
         } else {
             Mesh* mesh = dynamic_cast<Mesh*>(child);
             if (mesh) {
+                mesh->setDrawSelectionMode(DrawSelectionMode::Objects);
                 mesh->draw(m_shaderSelectionProgram); // Render with unique color
+                mesh->setDrawSelectionMode(DrawSelectionMode::None);
             }
         }
     }
@@ -433,6 +483,42 @@ void GLWidget::renderNodeSelectionBuffer()
     glDisable(GL_DEPTH_TEST); // Disable depth testing
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);  // Set the clear color back to the default
 
+}
+
+void GLWidget::renderVerticesSelectionBuffer()
+{
+    m_selectionFBO->bind(); // Bind the framebuffer
+
+    glEnable(GL_DEPTH_TEST); // Enable depth testing
+    glEnable(GL_CULL_FACE); 
+    glCullFace(GL_BACK);   
+    glFrontFace(GL_CCW);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Clear the color buffer with black
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear the color and depth buffer
+
+    m_shaderSelectionProgram->bind();
+
+    m_shaderSelectionProgram->setUniformValue("projection", m_camera->getProjectionMatrix());
+    m_shaderSelectionProgram->setUniformValue("view", m_camera->getViewMatrix());
+
+    Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+    if (mesh) {
+        mesh->setDrawSelectionMode(DrawSelectionMode::UseCulling);
+        mesh->draw(m_shaderSelectionProgram);
+
+        mesh->setDrawSelectionMode(DrawSelectionMode::Vertices);
+        mesh->draw(m_shaderSelectionProgram); // Render with unique color
+        mesh->setDrawSelectionMode(DrawSelectionMode::None);
+    }
+
+    m_shaderSelectionProgram->release();
+    m_selectionFBO->release();
+
+    glDisable(GL_CULL_FACE); 
+    glDisable(GL_DEPTH_TEST); // Disable depth testing
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);  // Set the clear color back to the default
+
+    
 }
 
 int GLWidget::getObjectIdAtMouse(const QPoint& mousePosition) 
@@ -475,7 +561,8 @@ QVector<int> GLWidget::getObjectsIdInRect(const QRect &rect)
 
     for (int i = 0; i < pixels.size(); i += 3) {
         int id = colorToID(pixels[i], pixels[i + 1], pixels[i + 2]);
-        if (id != 0 && !ids.contains(id)) ids.push_back(id);
+        // pixel(0, 0, 0) and pixel(255, 255, 255) ignored
+        if (id != 0 && id != 16777215 && !ids.contains(id)) ids.push_back(id); 
     }
 
     return ids;
@@ -520,7 +607,6 @@ void GLWidget::grabNodeSelected()
 
         // Undo translation
         if (QApplication::mouseButtons() & Qt::RightButton) {
-            m_currentNode->transform.position = initialPosition;
             m_lastNodeTransform.position = initialPosition;
             // std::cout << "Translation canceled" << std::endl;
             break;
@@ -570,7 +656,6 @@ void GLWidget::scaleNodeSelected()
         
         // Undo scaling
         if (QApplication::mouseButtons() & Qt::RightButton) {
-            m_currentNode->transform.scale = initialScale;
             m_lastNodeTransform.scale = initialScale;
             // std::cout << "Scaling canceled" << std::endl;
             break;
@@ -617,7 +702,6 @@ void GLWidget::rotateNodeSelected()
 
         // Undo rotation
         if (QApplication::mouseButtons() & Qt::RightButton) {
-            m_currentNode->transform.setRotationEuler(initialRotation);
             m_lastNodeTransform.setRotationEuler(initialRotation);
             // std::cout << "Rotation canceled" << std::endl;
             break;
@@ -632,4 +716,76 @@ void GLWidget::rotateNodeSelected()
         m_transformMode = TransformMode::None;
         m_gizmo->setMode(TransformMode::None);
     }
+}
+
+void GLWidget::grabVerticesSelected()
+{
+    if (m_selectedVertexIndices.isEmpty()) return;
+    m_activeTransforms++;
+
+    Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+
+    QVector3D initialPosition = mesh->vertices()[m_selectedVertexIndices.last()].position;
+    qDebug() << initialPosition;
+    QVector3D vertexPosition = initialPosition;
+
+    QVector3D planePoint = initialPosition;
+    QVector3D rayOrigin, rayDirection;
+    QVector3D planeNormal = -m_camera->getFront();
+    QPoint localPos = mapFromGlobal(QCursor::pos());
+    mouseToRay(localPos, rayOrigin, rayDirection, m_camera, width(), height());
+
+    QVector3D previousIntersection = rayPlaneIntersection(rayOrigin, rayDirection, planePoint, planeNormal);
+    
+    while (!(QApplication::mouseButtons() & Qt::LeftButton)) {
+        QCoreApplication::processEvents();
+
+        if (m_transformMode != TransformMode::Translate || m_activeTransforms < m_nbTotalActiveTransform) {
+            m_lastNodeTransform.position = initialPosition;
+            break;
+        }
+        
+        QVector3D planeNormal = -m_camera->getFront();
+        QPoint localPos = mapFromGlobal(QCursor::pos());
+        mouseToRay(localPos, rayOrigin, rayDirection, m_camera, width(), height());
+        QVector3D currentIntersection = rayPlaneIntersection(rayOrigin, rayDirection, planePoint, planeNormal);
+        QVector3D delta = currentIntersection - previousIntersection;
+
+        vertexPosition += delta;
+        mesh->updateVertexPosition(m_selectedVertexIndices.last(), vertexPosition);
+        update();
+        if (m_activeTransforms == m_nbTotalActiveTransform) m_lastNodeTransform.position = vertexPosition;
+
+        previousIntersection = currentIntersection;
+
+        // Undo translation
+        if (QApplication::mouseButtons() & Qt::RightButton) {
+            m_lastNodeTransform.position = initialPosition;
+            // std::cout << "Translation canceled" << std::endl;
+            break;
+        }
+    }
+
+    if (m_activeTransforms == m_nbTotalActiveTransform) {
+        mesh->updateVertexPosition(m_selectedVertexIndices.last(), m_lastNodeTransform.position);
+        m_initialNodeTransform.position = m_lastNodeTransform.position;
+    }
+
+    m_activeTransforms--; 
+    if (m_activeTransforms == 0) {  // Check if all transformations are done
+        m_transformMode = TransformMode::None;
+    }
+
+}
+
+void GLWidget::scaleVerticesSelected()
+{
+    if (m_selectedVertexIndices.isEmpty()) return;
+
+}
+
+void GLWidget::rotateVerticesSelected()
+{
+    if (m_selectedVertexIndices.isEmpty()) return;
+
 }

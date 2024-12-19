@@ -73,8 +73,14 @@ private:
     void grabNodeSelected();
     void scaleNodeSelected();
     void rotateNodeSelected();
-    // QVector3D m_constraint { 1.0f, 1.0f, 1.0f };
 
+    // Manage vertices transformation
+    void grabVerticesSelected();
+    void scaleVerticesSelected();
+    void rotateVerticesSelected();
+
+    // QVector3D m_constraint { 1.0f, 1.0f, 1.0f };
+    
     // Edit mode
     bool m_isEditMode { false };
 
@@ -108,11 +114,14 @@ private:
     QRect m_selectedRect;
     void initializeSelectionBuffer();
     void renderNodeSelectionBuffer();
-    int getObjectIdAtMouse(const QPoint &pos);
-    QVector<int> getObjectsIdInRect(const QRect &rect);
+    void renderVerticesSelectionBuffer();
     QOpenGLFramebufferObject* m_selectionFBO;  // Framebuffer for selection
     GLuint m_selectionTexture;                 // Renderbuffer Object for depth testing
 
+    int getObjectIdAtMouse(const QPoint &pos);
+    QVector<int> getObjectsIdInRect(const QRect &rect);
+
+    QVector<int> m_selectedVertexIndices;
 };
 
 
