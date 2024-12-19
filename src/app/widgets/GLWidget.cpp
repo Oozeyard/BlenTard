@@ -22,15 +22,18 @@ GLWidget::GLWidget(QWidget *parent)
 GLWidget::~GLWidget()
 {
     makeCurrent();
-    delete m_shaderProgram;
-    delete m_shaderGridOverlayProgram;
-    delete m_shaderSelectionProgram;
-    delete m_gridOverlay;
-    delete m_rootNode;
-    delete m_camera;
-    delete m_contextMenu;
-    delete m_gizmo;
-    delete m_selectionFBO;
+    if (m_shaderSelected) delete m_shaderSelected;
+    if (m_shaderSolid) delete m_shaderSolid;
+    if (m_shaderTexture) delete m_shaderTexture;
+    if (m_shaderRender) delete m_shaderRender;
+    if (m_shaderGridOverlayProgram) delete m_shaderGridOverlayProgram;
+    if (m_shaderSelectionProgram) delete m_shaderSelectionProgram;
+    if (m_gridOverlay) delete m_gridOverlay;
+    if (m_rootNode) delete m_rootNode;
+    if (m_camera) delete m_camera;
+    if (m_contextMenu) delete m_contextMenu;
+    if (m_gizmo) delete m_gizmo;
+    if (m_selectionFBO) delete m_selectionFBO;
     doneCurrent();
 }
 
@@ -50,37 +53,52 @@ void GLWidget::initializeGL()
 
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
-    // Create the principal shader program
-    m_shaderProgram = new Shader("./src/shaders/vertex_shader.glsl", "./src/shaders/fragment_shader.glsl");
+    // Create the main shader program
+    m_shaderSolid = new Shader("./src/shaders/vertex_shader_solid.glsl", "./src/shaders/fragment_shader_solid.glsl");
+    m_shaderTexture = new Shader("./src/shaders/vertex_shader_texture.glsl", "./src/shaders/fragment_shader_texture.glsl");
+    m_shaderRender = new Shader("./src/shaders/vertex_shader_rendered.glsl", "./src/shaders/fragment_shader_rendered.glsl");
+
+    m_shaderSelected = m_shaderRender;
+    m_shading = ShadingMode::SHADER_RENDER;
+
+    // Create the shadowmap shader program
+    m_shaderShadowMap = new Shader("./src/shaders/vertex_shader_shadowmap.glsl", "./src/shaders/fragment_shader_shadowmap.glsl");
 
     // Create the selection shader program
-    m_shaderSelectionProgram = new Shader("./src/shaders/vertex_shader_selection.glsl", "./src/shaders/fragment_shader_selection.glsl");
+    m_shaderSelectionProgram = new Shader("./src/shaders/selection/vertex_shader_selection.glsl", "./src/shaders/selection/fragment_shader_selection.glsl");
     initializeSelectionBuffer();
 
 
     // Create the grid overlay shader program
-    m_shaderGridOverlayProgram = new Shader("./src/shaders/vertex_shader_grid_overlay.glsl", "./src/shaders/fragment_shader_grid_overlay.glsl");
+    m_shaderGridOverlayProgram = new Shader("./src/shaders/grid/vertex_shader_grid_overlay.glsl", "./src/shaders/grid/fragment_shader_grid_overlay.glsl");
     m_gridOverlay = new GridOverlay(m_shaderGridOverlayProgram);
 
 
     // Gizmo
-    m_gizmoProgram = new Shader("./src/shaders/vertex_shader_gizmo.glsl", "./src/shaders/fragment_shader_gizmo.glsl");
+    m_gizmoProgram = new Shader("./src/shaders/gizmo/vertex_shader_gizmo.glsl", "./src/shaders/gizmo/fragment_shader_gizmo.glsl");
     m_gizmo = new Gizmo(m_gizmoProgram);
 
     m_camera = new Camera("MainCamera");
     m_camera->setAspect(static_cast<float>(width()) / static_cast<float>(height()));
 
-    // Model* map = new Model("Map", "models/swamp-location/source/map_1.obj"); map->transform.rotate(QVector3D(90, 0, 0));
-    // Model* cube = new Model("Cube", "models/cube.obj");
-    // Model* dragon = new Model("Dragon", "models/fbx/Dragon 2.5_fbx.fbx");
-    // m_rootNode->addChild(map);
-    // m_rootNode->addChild(cube);
-    // m_rootNode->addChild(dragon);
-
     // Test selection 
     createCube();
     createSphere();
     m_rootNode->getChildren().first()->transform.translate(QVector3D(0, 0, 2));
+
+    QString fileName = "models/fbx/Dragon 2.5_fbx.fbx";
+    QString modelName = QFileInfo(fileName).baseName();
+    makeCurrent();
+    m_rootNode->addChild(new Model(modelName, fileName));
+    doneCurrent();
+
+    // Test light
+    makeCurrent();
+    Light* light = new Light("Light", Light::DIRECTIONAL);
+    light->transform.translate(QVector3D(0.0f, 10.0f, 10.0f));
+    m_rootNode->addChild(light);
+    light->renderShadowMap(m_shaderShadowMap, m_rootNode);
+    doneCurrent();
 
 
     emit updateNode(m_rootNode);
@@ -96,12 +114,14 @@ void GLWidget::paintGL()
     // glEnable(GL_CULL_FACE);
     glDisable(GL_CULL_FACE);
 
-    
+     
     // light
-    m_shaderProgram->bind();
-    m_shaderProgram->setUniformValue("light_position", m_camera->transform.position);
-    m_shaderProgram->setUniformValue("light_direction", m_camera->getFront());
-    m_shaderProgram->release();
+    if (m_shading != ShadingMode::SHADER_RENDER) {
+        m_shaderSelected->bind();
+        m_shaderSelected->setUniformValue("light_position", m_camera->transform.position);
+        m_shaderSelected->setUniformValue("light_direction", m_camera->getFront());
+        m_shaderSelected->release();
+    }
 
     m_shaderGridOverlayProgram->bind();
     m_shaderGridOverlayProgram->setUniformValue("projection", m_camera->getProjectionMatrix());
@@ -109,11 +129,11 @@ void GLWidget::paintGL()
     m_gridOverlay->draw();
     m_shaderGridOverlayProgram->release();
 
-    m_shaderProgram->bind();
-    m_shaderProgram->setUniformValue("projection", m_camera->getProjectionMatrix());
-    m_shaderProgram->setUniformValue("view", m_camera->getViewMatrix());
-    m_rootNode->draw(m_shaderProgram);
-    m_shaderProgram->release();
+    m_shaderSelected->bind();
+    m_shaderSelected->setUniformValue("projection", m_camera->getProjectionMatrix());
+    m_shaderSelected->setUniformValue("view", m_camera->getViewMatrix());
+    m_rootNode->draw(m_shaderSelected);
+    m_shaderSelected->release();
 
     // Gizmo needs to be rendered at the end
     if (m_currentNode && m_gizmo->getMode() != TransformMode::None) {
@@ -381,6 +401,23 @@ void GLWidget::activateTool(Tool* tool) {
         break;
     case FACE_SELECT:
         break;
+    case SHADING:
+        break;
+    case RENDER:
+        m_shading = ShadingMode::SHADER_RENDER;
+        m_shaderSelected = m_shaderRender;
+        break;
+    case TEXTURE:
+        m_shading = ShadingMode::SHADER_TEXTURE;
+        m_shaderSelected = m_shaderTexture;
+        break;
+    case SOLID:
+        m_shading = ShadingMode::SHADER_SOLID;
+        m_shaderSelected = m_shaderSolid;
+        break;
+    case WIRE:
+        m_shading = ShadingMode::SHADER_WIRE;
+        break;
     case ORTHOGRAPHIC:
         m_camera->setOrthographic();
         break;
@@ -403,6 +440,15 @@ void GLWidget::doAction(const ActionType &actionType) {
         break;
     case ADD_CUSTOM_MODEL: 
         loadCustomModel();
+        break;
+    case ADD_DIRECTIONAL_LIGHT:
+        createLight(Light::DIRECTIONAL);
+        break;
+    case ADD_POINT_LIGHT:
+        createLight(Light::POINT);
+        break;
+    case ADD_SPOT_LIGHT:
+        createLight(Light::SPOT);
         break;
     case UNIFY_MESH:
     {
@@ -485,6 +531,15 @@ void GLWidget:: loadCustomModel()
     QString modelName = QFileInfo(fileName).baseName();
     makeCurrent();
     m_rootNode->addChild(new Model(modelName, fileName));
+    doneCurrent();
+}
+
+void GLWidget::createLight(Light::LightType type) 
+{
+    makeCurrent();
+    Light* light = new Light("Light", type);
+    m_rootNode->addChild(light);
+    light->renderShadowMap(m_shaderShadowMap, m_rootNode);
     doneCurrent();
 }
 

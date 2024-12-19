@@ -10,6 +10,12 @@ Context::Context(QWidget *parent) : QMenu(parent) {
     QAction *addCustomAction = meshMenu->addAction("Custom Model");
 
     addSeparator();
+    QMenu *LightMenu = addMenu("Add Light");
+    QAction *addDirectionalLightAction = LightMenu->addAction("Directional Light");
+    QAction *addPointLightAction = LightMenu->addAction("Point Light");
+    QAction *addSpotLightAction = LightMenu->addAction("Spot Light");
+
+    addSeparator();
     QAction *unifyMeshAction = addAction("Unify Mesh");
 
     addSeparator();
@@ -22,7 +28,9 @@ Context::Context(QWidget *parent) : QMenu(parent) {
 
     QAction *deleteAction = addAction("Delete");
 
-    // Connexion des signaux pour gérer les actions
+    // Connect actions
+
+    // Mesh
     connect(addCubeAction, &QAction::triggered, [this]() {
         emit actionTriggered(ADD_CUBE);
     });
@@ -35,6 +43,18 @@ Context::Context(QWidget *parent) : QMenu(parent) {
     connect(addCustomAction, &QAction::triggered, [this]() {
         emit actionTriggered(ADD_CUSTOM_MODEL);
     });
+
+    // Light
+    connect(addDirectionalLightAction, &QAction::triggered, [this]() {
+        emit actionTriggered(ADD_DIRECTIONAL_LIGHT);
+    });
+    connect(addPointLightAction, &QAction::triggered, [this]() {
+        emit actionTriggered(ADD_POINT_LIGHT);
+    });
+    connect(addSpotLightAction, &QAction::triggered, [this]() {
+        emit actionTriggered(ADD_SPOT_LIGHT);
+    });
+
     connect(unifyMeshAction, &QAction::triggered, [this]() {
         emit actionTriggered(UNIFY_MESH);
     });

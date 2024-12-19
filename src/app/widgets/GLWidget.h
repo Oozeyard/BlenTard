@@ -26,6 +26,7 @@
 #include "Shader.h"
 #include "Gizmo.h"
 #include "GLPainter.h"
+#include "Light.h"
 
 #include <iostream>
 
@@ -34,6 +35,13 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
     Q_OBJECT
 
 public:
+    enum ShadingMode {
+        SHADER_TEXTURE,
+        SHADER_RENDER,
+        SHADER_SOLID,
+        SHADER_WIRE
+    };
+
     GLWidget(QWidget *parent = 0);
     ~GLWidget();
 
@@ -72,6 +80,8 @@ private:
     void createSuzanne();
     void loadCustomModel();
 
+    void createLight(Light::LightType type);
+
     // Manage transformation
     void grabNodeSelected();
     void scaleNodeSelected();
@@ -84,11 +94,19 @@ private:
 
     // QVector3D m_constraint { 1.0f, 1.0f, 1.0f };
     
+    ShadingMode m_shading;
+
     // Edit mode
     bool m_isEditMode { false };
 
     // Shaders
-    Shader *m_shaderProgram;
+    Shader *m_shaderSolid; // Solid color
+    Shader *m_shaderTexture; // Texture
+    Shader *m_shaderRender; // Render (w/ light)
+
+    Shader *m_shaderShadowMap; // Shadow map
+    Shader *m_shaderSelected; // Selected  shader
+
     Shader *m_shaderGridOverlayProgram;
     Shader *m_shaderSelectionProgram;  // Shader for selection
     Shader *m_gizmoProgram;

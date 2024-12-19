@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     toolBar = new ToolBar(glWidget);
     InitTools();       
     toolBar->move(10, 30);
-    toolBar->setFixedSize(90, 50*(toolBar->GetToolsSize() + 10));
+    toolBar->setFixedHeight(50 * toolBar->GetToolsSize() + 50);
     connect(toolBar, &ToolBar::toolSelected, glWidget, &GLWidget::activateTool);
 
     // Hierarchy
@@ -76,6 +76,18 @@ void MainWindow::InitTools() {
     select.addSubTool(vertexSelect);
     select.addSubTool(faceSelect);
     toolBar->addTool(select);
+
+    // Shading
+    Tool shading = Tool("Shading", QIcon("src/app/icons/shading/mat_shaderball.svg"), ToolType::SHADING);
+    Tool renderShading = Tool("Render", QIcon("src/app/icons/shading/shading_rendered.svg"), ToolType::RENDER);
+    Tool textureShading = Tool("Texture", QIcon("src/app/icons/shading/shading_texture.svg"), ToolType::TEXTURE);
+    Tool solidShading = Tool("Solid", QIcon("src/app/icons/shading/shading_solid.svg"), ToolType::SOLID);
+    Tool wireShading = Tool("Wire", QIcon("src/app/icons/shading/shading_wire.svg"), ToolType::WIRE);
+    shading.addSubTool(renderShading);
+    shading.addSubTool(textureShading);
+    shading.addSubTool(solidShading);
+    shading.addSubTool(wireShading);
+    toolBar->addTool(shading);
 
     // Caméra
     Tool orthographic = Tool("Orthographic", QIcon("src/app/icons/view_ortho.svg"), ToolType::ORTHOGRAPHIC);
