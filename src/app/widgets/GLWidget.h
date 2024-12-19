@@ -13,7 +13,8 @@
 #include <QFileDialog>
 #include <QApplication>
 #include <QCoreApplication>
-#include <GL/gl.h>
+#include <QRect>
+// #include <GL/gl.h>
 
 #include "Node.h"
 #include "Model.h"
@@ -24,6 +25,7 @@
 #include "Utils.h"
 #include "Shader.h"
 #include "Gizmo.h"
+#include "GLPainter.h"
 
 #include <iostream>
 
@@ -57,6 +59,7 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
 
     void contextMenuEvent(QContextMenuEvent *event) override;
@@ -73,8 +76,14 @@ private:
     void grabNodeSelected();
     void scaleNodeSelected();
     void rotateNodeSelected();
-    // QVector3D m_constraint { 1.0f, 1.0f, 1.0f };
 
+    // Manage vertices transformation
+    void grabVerticesSelected();
+    void scaleVerticesSelected();
+    void rotateVerticesSelected();
+
+    // QVector3D m_constraint { 1.0f, 1.0f, 1.0f };
+    
     // Edit mode
     bool m_isEditMode { false };
 
@@ -100,15 +109,22 @@ private:
 
     // Interactive transformation
     TransformMode m_transformMode { TransformMode::None };
-    Transform m_currentNodeTransform, m_lastNodeTransform;
+    Transform m_initialNodeTransform, m_lastNodeTransform;
     std::atomic<int> m_activeTransforms{0}, m_nbTotalActiveTransform{0}; // Number of active transformations
 
-    // Selection (Color picking)
+    // Selection (Color picking)  
+    GLPainter *m_glPainter;
+    QRect m_selectedRect;
     void initializeSelectionBuffer();
-    void renderSelectionBuffer();
-    int getObjectIdAtMouse(const QPoint &pos);
+    void renderNodeSelectionBuffer();
+    void renderVerticesSelectionBuffer();
     QOpenGLFramebufferObject* m_selectionFBO;  // Framebuffer for selection
     GLuint m_selectionTexture;                 // Renderbuffer Object for depth testing
+
+    int getObjectIdAtMouse(const QPoint &pos);
+    QVector<int> getObjectsIdInRect(const QRect &rect);
+
+    QVector<int> m_selectedVertexIndices;
 };
 
 

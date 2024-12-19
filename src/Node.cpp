@@ -92,6 +92,20 @@ void Node::deleteSelectedNodes() {
     }
 }
 
+void Node::setEditMode() {
+    m_editMode = !m_editMode;
+    for (Node* child : m_children) {
+        child->setEditMode();
+    }
+}
+
+void Node::disableAllEditMode() {
+    m_editMode = false;
+    for (Node* child : m_children) {
+        child->disableAllEditMode();
+    }
+}
+
 Node* Node::getNodeById(uint id) {
     auto it = s_nodeRegistry.find(id);
     if (it != s_nodeRegistry.end()) {

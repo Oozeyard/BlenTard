@@ -38,6 +38,11 @@ public:
     void selectAll();
     QVector<Node*> getSelectedNode();
 
+    void setEditMode();
+    bool isEditMode() const { return m_editMode; }
+
+    void disableAllEditMode();
+
     uint getId() const { return m_id; }
     static Node* getNodeById(uint id);
 
@@ -47,7 +52,8 @@ signals:
 protected:
     QString m_name;
     QVector<Node*> m_children;
-    bool m_selected = false;
+    bool m_selected { false };
+    bool m_editMode { false };
 
 private:
     uint m_id;

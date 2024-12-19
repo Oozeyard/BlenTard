@@ -127,6 +127,8 @@ void Gizmo::draw() {
     shaderProgram->bind();
 
     glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    
 
     switch (transformMode) {
     case Translate:
@@ -144,6 +146,7 @@ void Gizmo::draw() {
         break;
     }
 
+    glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
     shaderProgram->release();

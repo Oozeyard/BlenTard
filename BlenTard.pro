@@ -29,6 +29,7 @@ SOURCES += Main.cpp \
     src/Shader.cpp \
     src/Gizmo.cpp \
     src/Utils.cpp \
+    src/GLPainter.cpp \
     libs/stb_image.cpp
 
 HEADERS += src/app/MainWindow.h \
@@ -46,6 +47,7 @@ HEADERS += src/app/MainWindow.h \
     src/includes/Shader.h \
     src/includes/Gizmo.h \
     src/includes/Utils.h \
+    src/includes/GLPainter.h \
     libs/stb_image.h 
 
 INCLUDEPATH += ./libs/glm-0.9.7.1 \
@@ -54,9 +56,7 @@ INCLUDEPATH += ./libs/glm-0.9.7.1 \
     ./src/app \
     ./src/app/widgets \
     ./src/shaders \
-    ./src/includes
-
-# for Windows, use local assimp
+    ./src/includes 
 win32: INCLUDEPATH += ./libs/assimp-5.4.3/include
 
 unix: LIBS += -lGL -ldl -lpthread -lassimp

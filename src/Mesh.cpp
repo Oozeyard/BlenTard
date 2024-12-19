@@ -6,13 +6,15 @@ Mesh::Mesh(const QString& name, const QVector<Vertex>& vertices, const QVector<u
     m_indices(indices),
     m_material(material),
     m_vertexBuffer(QOpenGLBuffer::VertexBuffer),
-    m_indexBuffer(QOpenGLBuffer::IndexBuffer)
+    m_indexBuffer(QOpenGLBuffer::IndexBuffer),
+    m_colorBuffer(QOpenGLBuffer::VertexBuffer)
 {
     initializeOpenGLFunctions();
     
     m_vao.create();
     m_vertexBuffer.create();
     m_indexBuffer.create();
+    m_colorBuffer.create();
 
     setupMesh();
 }
@@ -22,10 +24,19 @@ Mesh::~Mesh()
     m_vao.destroy();
     m_vertexBuffer.destroy();
     m_indexBuffer.destroy();
+    m_colorBuffer.destroy();
 }
 
 void Mesh::setupMesh()
 {
+    m_vertexColors.clear();
+    for (int i = 0; i < m_vertices.size(); i++) {
+        m_vertexColors.push_back(idToColor(i + 1)); // Unique color for each vertex
+    }
+
+    m_selectedVertices.resize(m_vertices.size());
+    // std::fill(m_selectedVertices.begin(), m_selectedVertices.end(), false);
+
     m_vao.bind();
 
     m_vertexBuffer.bind();
@@ -51,6 +62,13 @@ void Mesh::setupMesh()
 
     m_vertexBuffer.release();
     m_indexBuffer.release();
+    
+    m_colorBuffer.bind();
+    m_colorBuffer.allocate(m_vertexColors.data(), m_vertexColors.size() * sizeof(QVector3D));
+    glEnableVertexAttribArray(5);
+    glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(QVector3D), (void*)0); // Vertex color
+    m_colorBuffer.release();
+
     m_vao.release();
 }
 
@@ -64,7 +82,37 @@ void Mesh::draw(QOpenGLShaderProgram* program)
         program->setUniformValue("model", qobject_cast<Node*>(parent())->transform.getModelMatrix() * transform.getModelMatrix());
     }
 
-    program->setUniformValue("objectColor", idToColor(getId()));
+    switch (m_selectionMode) {
+        case DrawSelectionMode::UseCulling:
+            m_vao.bind();
+            m_vertexBuffer.bind();
+            m_indexBuffer.bind();
+            program->setUniformValue("objectColor", QVector3D(1.0f, 1.0f, 1.0f));
+            glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, nullptr);
+            m_vertexBuffer.release();
+            m_indexBuffer.release();
+            m_vao.release();
+            return;
+        case DrawSelectionMode::Objects:
+            m_vao.bind();
+            m_vertexBuffer.bind();
+            m_indexBuffer.bind();
+            program->setUniformValue("objectColor", idToColor(getId()));
+            glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, nullptr);
+            m_vertexBuffer.release();
+            m_indexBuffer.release();
+            m_vao.release();
+            return;
+        case DrawSelectionMode::Vertices:
+            glPointSize(5.0f); 
+            m_vao.bind();
+            program->setUniformValue("objectColor", QVector3D(0.0f, 0.0f, 0.0f));
+            glDrawArrays(GL_POINTS, 0, m_vertices.size());
+            m_vao.release();
+            return;
+        default:
+            break;
+    }
 
     program->setUniformValue("material.albedo", m_material.albedo);
     program->setUniformValue("material.specular", m_material.specular);
@@ -88,21 +136,37 @@ void Mesh::draw(QOpenGLShaderProgram* program)
     program->setUniformValue("numDiffuseTextures", textureCounters["texture_diffuse"]);
     program->setUniformValue("numNormalTextures", textureCounters["texture_normal"]);
 
-
     m_vao.bind();
     m_vertexBuffer.bind();
     m_indexBuffer.bind();
     
-    glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
+    if (m_selectionMode != DrawSelectionMode::Vertices) glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, nullptr);
 
+    // Draw wireframe if selected
     if (m_selected) {
         program->setUniformValue("selected", true);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glLineWidth(2.0f); 
         glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, nullptr);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
+    } 
     program->setUniformValue("selected", false);
+
+    // Draw vertices if in edit mode
+    if (m_editMode) {
+        program->setUniformValue("editMode", true);
+        glPointSize(5.0f);
+        for (int i = 0; i < m_vertices.size(); ++i) {
+            if (m_selectedVertices[i]) {
+            program->setUniformValue("objectColor", QVector3D(1.0f, 0.5f, 0.0f)); 
+            } else {
+            program->setUniformValue("objectColor", QVector3D(0.0f, 0.0f, 0.0f)); 
+            }
+            glDrawArrays(GL_POINTS, i, 1);
+        }
+    }
+    program->setUniformValue("editMode", false);
+
 
     // Débind textures
     for (int i = 0; i < m_material.textures.size(); i++) {
@@ -160,6 +224,15 @@ uint Mesh::textureFromFile(const QString& path, const QString& directory)
     }
 
     return textureID;
+
+}
+
+void Mesh::updateVertexPosition(int index, const QVector3D& position)
+{
+    m_vertices[index].position = position;
+    m_vertexBuffer.bind();
+    m_vertexBuffer.write(index * sizeof(Vertex), &m_vertices[index], sizeof(Vertex));
+    m_vertexBuffer.release();
 }
 
 void Mesh::subdivide()
