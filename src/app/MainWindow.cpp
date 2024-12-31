@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     rightLayout->addWidget(inspector);
 
     connect(hierarchy, &Hierarchy::nodeSelected, glWidget, &GLWidget::setCurrentNode);
+    connect(hierarchy, &Hierarchy::unselectNodes, glWidget, &GLWidget::unselectNodes);
 
     // connect key press event (TOFIX)
     connect(hierarchy, &Hierarchy::keyPressed, glWidget, &GLWidget::keyPressed);

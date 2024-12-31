@@ -21,16 +21,19 @@ public:
 signals:
     void nodeSelected(Node *node);
     void keyPressed(QKeyEvent *event);
+    void unselectNodes();
 
 public slots:
     void updateNode(Node *node);
     void onItemClicked(QTreeWidgetItem *item, int column);
     void selectNode(Node *node);
+
 private:
 
     QTreeWidget *treeWidget;
     Node *rootNode { nullptr };
     QSet<Node *> selectedNodes;
+    Node *m_currentNode { nullptr };
 
     void keyPressEvent(QKeyEvent *event) override; 
 };

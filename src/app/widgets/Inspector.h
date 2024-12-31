@@ -12,12 +12,15 @@
 #include <QColorDialog>
 #include <QFileDialog>
 #include <QScrollArea>
+#include <QComboBox>
 
 #include "Tools.h"
 #include "Node.h"
 #include "Hierarchy.h"
 #include "Utils.h"
 #include "Mesh.h"
+#include "Model.h"
+#include "Light.h"
 
 class Inspector : public QWidget {
     Q_OBJECT
@@ -41,8 +44,11 @@ private:
 
     void updateTransform(Node *node);
     void updateMaterial(Node *node);
+    void updateLight(Node *node);
 
     Node *convertToMesh(Node* node);
+    Node *convertToModel(Node* node);
+    Node *convertToLight(Node* node);
 
     QLabel *toolNameLabel;
     QLabel *toolDescriptionLabel;
@@ -51,11 +57,11 @@ private:
     Hierarchy *hierarchy;
 
     QVBoxLayout *layout;
+    QVBoxLayout *transformLayout, *materialLayout, *lightLayout;
+    QToolButton *transformButton, *materialButton, *lightButton;
 
     // Transform widgets
     void initTransformWidget(QVBoxLayout *layout);
-
-    QVBoxLayout *transformLayout;
 
     QGroupBox *positionGroup, *rotationGroup, *scaleGroup;
 
@@ -74,6 +80,17 @@ private:
     QListWidget *texturesListWidget;
     QLabel *texturesLabel;
     QPushButton *addTextureButton, *removeTextureButton;
+
+    void toggleMaterial(bool checked);
+
+    // Light widgets
+    void initLightWidget(QVBoxLayout *layout);
+    QGroupBox *lightGroup;
+    QPushButton *lightColorButton;
+    QDoubleSpinBox *lightIntensitySpinBox;
+    QComboBox *lightTypeComboBox;
+
+    void toggleLight(bool checked);
     
     void onAlbedoColorButtonClicked();
     void onSpecularColorButtonClicked();
@@ -84,5 +101,6 @@ private:
     void onAddTexture();
     void onRemoveTexture();
 
-    void toggleMaterial(bool checked);
+    void onLightColorButtonClicked();
+    void onLightIntensityChanged(double value);
 };

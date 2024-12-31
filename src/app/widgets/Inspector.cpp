@@ -24,6 +24,9 @@ Inspector::Inspector(QWidget *parent)
   // Material section
   initMaterialWidget(scrollLayout);
 
+  // Light section
+  initLightWidget(scrollLayout);
+
   // Tool info
   scrollLayout->addWidget(toolNameLabel);
   scrollLayout->addWidget(toolDescriptionLabel);
@@ -42,7 +45,7 @@ Inspector::Inspector(QWidget *parent)
 
 void Inspector::initTransformWidget(QVBoxLayout *layout) {
 
-    QToolButton *transformButton = new QToolButton();
+    transformButton = new QToolButton();
     transformButton->setText("Transform");
     transformButton->setArrowType(Qt::DownArrow);
     transformButton->setCheckable(true);
@@ -137,7 +140,7 @@ void Inspector::toggleTransform(bool checked) {
 
 void Inspector::initMaterialWidget(QVBoxLayout *layout) {
 
-    QToolButton *materialButton = new QToolButton();
+    materialButton = new QToolButton();
     materialButton->setText("Material");
     materialButton->setArrowType(Qt::DownArrow);
     materialButton->setCheckable(true);
@@ -146,7 +149,7 @@ void Inspector::initMaterialWidget(QVBoxLayout *layout) {
 
     connect(materialButton, &QToolButton::toggled, this, &Inspector::toggleMaterial);
 
-    QVBoxLayout *materialLayout = new QVBoxLayout();
+    materialLayout = new QVBoxLayout();
 
     // Albedo color
     albedoColorButton = new QPushButton("Set Albedo");
@@ -219,9 +222,80 @@ void Inspector::toggleMaterial(bool checked) {
     removeTextureButton->setVisible(checked);
 }
 
+void Inspector::initLightWidget(QVBoxLayout *layout) {
+    //button
+    lightButton = new QToolButton();
+    lightButton->setText("Light");
+    lightButton->setArrowType(Qt::DownArrow);
+    lightButton->setCheckable(true);
+    lightButton->setChecked(true);
+    lightButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+   
+    // Light properties
+    lightLayout = new QVBoxLayout();
+
+    // Light type
+    lightTypeComboBox = new QComboBox();
+    lightTypeComboBox->addItem("Directional");
+    lightTypeComboBox->addItem("Point");
+    lightTypeComboBox->addItem("Spot");
+    lightLayout->addWidget(lightTypeComboBox);
+
+    // Light color
+    lightColorButton = new QPushButton("Set Light Color");
+    connect(lightColorButton, &QPushButton::clicked, this, &Inspector::onLightColorButtonClicked);
+    lightLayout->addWidget(lightColorButton);
+
+    // Light intensity
+    lightIntensitySpinBox = new QDoubleSpinBox();
+    lightIntensitySpinBox->setRange(0.0, 100.0);
+    lightIntensitySpinBox->setSingleStep(0.1);
+    lightIntensitySpinBox->setPrefix("Intensity: ");
+    connect(lightIntensitySpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &Inspector::onLightIntensityChanged);
+    lightLayout->addWidget(lightIntensitySpinBox);
+
+    layout->addWidget(lightButton);
+    layout->addLayout(lightLayout);
+}
+
+void Inspector::toggleLight(bool checked) {
+    lightTypeComboBox->setVisible(checked);
+    lightColorButton->setVisible(checked);
+    lightIntensitySpinBox->setVisible(checked);
+}
+
 void Inspector::updateNode(Node *node) {
-  updateTransform(node);
-  updateMaterial(node);
+  // check wich class the node is
+  if (convertToMesh(node)) {
+    toggleTransform(true);
+    updateTransform(node);
+
+    toggleMaterial(true);
+    updateMaterial(node);
+    
+    toggleLight(false);
+    lightButton->setEnabled(false);
+  }
+  else if (convertToModel(node)) {
+    toggleTransform(true);
+    updateTransform(node);
+
+    toggleMaterial(false);
+    materialButton->setEnabled(false);
+    
+    toggleLight(false);
+    lightButton->setEnabled(false);
+  }
+  else if (convertToLight(node)) {
+    toggleTransform(true);
+    updateTransform(node);
+
+    toggleMaterial(false);
+    materialButton->setEnabled(false);
+    
+    toggleLight(true);
+    updateLight(node);
+  }
 }
 
 void Inspector::updateTransform(Node *node) {
@@ -295,6 +369,17 @@ void Inspector::updateMaterial(Node *node) {
   for (const Texture& texture : mesh->getMaterial().textures) {
     texturesListWidget->addItem(texture.path);
   }
+}
+
+void Inspector::updateLight(Node *node) {
+  Light* light = dynamic_cast<Light*>(node);
+  if (!light) return;
+
+  // block signals to prevent wrong values
+  QSignalBlocker blockerIntensity(lightIntensitySpinBox);
+
+  lightIntensitySpinBox->setValue(light->getIntensity());
+  lightTypeComboBox->setCurrentIndex(static_cast<int>(light->getType()));
 }
 
 void Inspector::onPositionChanged() {
@@ -412,6 +497,22 @@ void Inspector::onShininessChanged(double value) {
     emit currentNode->nodeChanged();
 }
 
+void Inspector::onLightColorButtonClicked() {
+    Light* light = dynamic_cast<Light*>(currentNode);
+    if (!light) return;
+    QColor color = QColorDialog::getColor(Qt::white, this, "Choose Light Color");
+    if (color.isValid()) {
+        light->setColor(QVector3D(color.redF(), color.greenF(), color.blueF()));
+        emit currentNode->nodeChanged();
+    }
+}
+
+void Inspector::onLightIntensityChanged(double value) {
+    Light* light = dynamic_cast<Light*>(currentNode);
+    if (!light) return;
+    light->setIntensity(static_cast<float>(value));
+    emit currentNode->nodeChanged();
+}
 
 void Inspector::setToolInfo(Tool *tool) {
   toolNameLabel->setText("Tool: " + tool->getName());
@@ -421,6 +522,18 @@ void Inspector::setToolInfo(Tool *tool) {
 Node* Inspector::convertToMesh(Node* node) {
     Mesh* mesh = dynamic_cast<Mesh*>(node);
     if (mesh) return mesh;
+    else return nullptr;
+}
+
+Node* Inspector::convertToModel(Node* node) {
+    Model* model = dynamic_cast<Model*>(node);
+    if (model) return model;
+    else return nullptr;
+}
+
+Node* Inspector::convertToLight(Node* node) {
+    Light* light = dynamic_cast<Light*>(node);
+    if (light) return light;
     else return nullptr;
 }
 

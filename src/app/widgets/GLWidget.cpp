@@ -189,6 +189,7 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_G: // Grab (translate)
         if (m_currentNode) {
+            qDebug() << "Grab" << m_currentNode->getName();
             m_currentNode->transform = m_lastNodeTransform = m_initialNodeTransform;
             m_transformMode = m_transformMode == TransformMode::Translate ? TransformMode::None : TransformMode::Translate;
             if (m_isEditMode) grabVerticesSelected();
@@ -369,6 +370,12 @@ void GLWidget::contextMenuEvent(QContextMenuEvent *event) {
 
     // Show the context menu
     m_contextMenu->showContextMenu(event->globalPos());
+}
+
+void GLWidget::unselectNodes() {
+    m_rootNode->deselectAll();
+    m_currentNode = nullptr;
+    emit NodeSelected(nullptr);
 }
 
 void GLWidget::activateTool(Tool* tool) {

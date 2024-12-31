@@ -56,25 +56,27 @@ void Hierarchy::onItemClicked(QTreeWidgetItem *item, int column) {
     if (!node) return;
 
     // Ctrl handling
-    if (QApplication::keyboardModifiers() & Qt::ControlModifier) {
-        if (selectedNodes.contains(node)) {
-            node->setSelected(); // unselect
-            selectedNodes.remove(node);
-        } else {
-            node->setSelected(); // select
-            selectedNodes.insert(node);
-        }
-    } else { // single selection
-        for (Node *selectedNode : selectedNodes) {
-            selectedNode->setSelected();
-        }
-        selectedNodes.clear();
+    // if (QApplication::keyboardModifiers() & Qt::ControlModifier) {
+    //     if (selectedNodes.contains(node)) {
+    //         node->setSelected(); // unselect
+    //         selectedNodes.remove(node);
+    //     } else {
+    //         node->setSelected(); // select
+    //         selectedNodes.insert(node);
+    //     }
+    // } else { // single selection
+    //     for (Node *selectedNode : selectedNodes) {
+    //         selectedNode->setSelected();
+    //     }
+    //     selectedNodes.clear();
 
-        // select new node
-        node->setSelected();
-        selectedNodes.insert(node);
-    }
+    //     // select new node
+    //     node->setSelected();
+    //     selectedNodes.insert(node);
+    // }
 
+    emit unselectNodes();
+    node->setSelected();
     emit nodeSelected(node);
 }
 

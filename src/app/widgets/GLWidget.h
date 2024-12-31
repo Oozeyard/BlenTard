@@ -54,6 +54,7 @@ public:
 public slots:
     void activateTool(Tool* tool);
     void setCurrentNode(Node *node) { m_currentNode = node; }
+    void unselectNodes();
     void keyPressed(QKeyEvent *event);
 
 signals:
