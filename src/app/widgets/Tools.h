@@ -89,7 +89,7 @@ protected:
 
 private:
     QVector<Tool> tools;
-    Tool *selectedTool;
+    Tool *selectedTool = nullptr;
 
 signals:
     void toolSelected(Tool *tool);
