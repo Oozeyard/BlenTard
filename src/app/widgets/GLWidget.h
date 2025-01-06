@@ -66,6 +66,7 @@ protected:
     void paintGL() override;
     void resizeGL(int w, int h) override;
     void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
@@ -131,7 +132,8 @@ private:
     Transform m_initialNodeTransform, m_lastNodeTransform;
     std::atomic<int> m_activeTransforms{0}, m_nbTotalActiveTransform{0}; // Number of active transformations
 
-    // Selection (Color picking)  
+    // Selection (Color picking) 
+    bool m_isShitKeyPressed { false }; 
     GLPainter *m_glPainter;
     QRect m_selectedRect;
     void initializeSelectionBuffer();

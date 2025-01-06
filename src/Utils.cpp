@@ -43,3 +43,12 @@ QVector3D worldToScreen(const QVector3D& worldPos, const Camera* m_camera, const
     float y = (1.0f - (clipSpacePos.y() * 0.5f + 0.5f)) * height;
     return QVector3D(x, y, clipSpacePos.z());
 }
+
+QVector3D getMidlePoint(const QVector<QVector3D>& points)
+{
+    QVector3D midlePoint;
+    for (const QVector3D& point : points) {
+        midlePoint += point;
+    }
+    return midlePoint / points.size();
+}

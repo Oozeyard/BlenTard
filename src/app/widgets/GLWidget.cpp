@@ -145,6 +145,7 @@ void GLWidget::paintGL()
         m_gizmoProgram->release();
     }
 
+
     update();
 }
 
@@ -158,11 +159,14 @@ void GLWidget::resizeGL(int w, int h)
 
 void GLWidget::keyPressEvent(QKeyEvent *event)
 {
-    std::cout << "Key pressed: " << event->key() << std::endl;
+    // std::cout << "Key pressed: " << event->key() << std::endl;
+
     // Camera input
     m_camera->keyPressEvent(event);
 
     m_nbTotalActiveTransform.store(0);
+
+    if (event->key() == Qt::Key_Shift) m_isShitKeyPressed = true;
     
     // Key input
     switch (event->key()) 
@@ -175,16 +179,22 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
         if (m_currentNode) {
             m_currentNode->transform = m_lastNodeTransform = m_initialNodeTransform;
             m_transformMode = m_transformMode == TransformMode::Scale ? TransformMode::None : TransformMode::Scale;
-            m_gizmo->setMode(m_transformMode);
-            scaleNodeSelected();
+            if (m_isEditMode) scaleVerticesSelected();
+            else {
+                m_gizmo->setMode(m_transformMode);
+                scaleNodeSelected();
+            }
         }
         break;
     case Qt::Key_R: // Rotate
         if (m_currentNode) {
             m_currentNode->transform = m_lastNodeTransform = m_initialNodeTransform;
             m_transformMode = m_transformMode == TransformMode::Rotate ? TransformMode::None : TransformMode::Rotate;
-            m_gizmo->setMode(m_transformMode);
-            rotateNodeSelected();
+            if (m_isEditMode) rotateVerticesSelected();
+            else {
+                m_gizmo->setMode(m_transformMode);
+                rotateNodeSelected();
+            }
         }
         break;
     case Qt::Key_G: // Grab (translate)
@@ -222,6 +232,11 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
         break;
     }
 
+}
+
+void GLWidget::keyReleaseEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Shift) m_isShitKeyPressed = false;
 }
 
 void GLWidget::keyPressed(QKeyEvent *event) {
@@ -300,7 +315,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
         qDebug() << "Selected ids: " << ids;
 
         if (!ids.isEmpty()) { // If the id is not 0, a node has been selected
-            m_rootNode->deselectAll();
+            if (!m_isShitKeyPressed) m_rootNode->deselectAll();
             for (int id : ids) {
                 Node* node = m_rootNode->getNodeById(id);
                 if (node) {
@@ -319,7 +334,6 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
     }
 
     if (event->button() == Qt::LeftButton && m_isEditMode) {
-        std::cout << "Edit Mode" << std::endl;
         m_selectedRect = m_glPainter->getSelectionRect();
 
         // Reset gizmo
@@ -340,7 +354,7 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
         Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
         if (mesh) {
             if (!ids.isEmpty()) {
-                mesh->deselectAllVertices();
+                if (!m_isShitKeyPressed) mesh->deselectAllVertices();
                 for (int id : ids) {
                     mesh->selectVertex(id - 1);
                     m_selectedVertexIndices.push_back(id - 1);
@@ -348,7 +362,6 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event)
                     m_lastNodeTransform = m_initialNodeTransform;
                 }
             } else {
-                qDebug() << "Deselect all vertices";
                 mesh->deselectAllVertices();
                 m_selectedVertexIndices.clear();
             }
@@ -850,24 +863,36 @@ void GLWidget::grabVerticesSelected()
 
     Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
 
-    QVector3D initialPosition = mesh->getVertices()[m_selectedVertexIndices.last()].position;
-    qDebug() << initialPosition;
-    QVector3D vertexPosition = initialPosition;
+    QVector<QVector3D> initialPositions;
+    for (int index : m_selectedVertexIndices) initialPositions.append(mesh->getVertices()[index].position);
 
-    QVector3D planePoint = initialPosition;
+    QVector<QVector3D> verticesPositions = initialPositions;
+    
+    QVector3D planePoint = initialPositions.last();
     QVector3D rayOrigin, rayDirection;
     QVector3D planeNormal = -m_camera->getFront();
     QPoint localPos = mapFromGlobal(QCursor::pos());
     mouseToRay(localPos, rayOrigin, rayDirection, m_camera, width(), height());
 
     QVector3D previousIntersection = rayPlaneIntersection(rayOrigin, rayDirection, planePoint, planeNormal);
+
+    size_t nbVertices = m_selectedVertexIndices.size();
     
     while (!(QApplication::mouseButtons() & Qt::LeftButton)) {
         QCoreApplication::processEvents();
 
         if (m_transformMode != TransformMode::Translate || m_activeTransforms < m_nbTotalActiveTransform) {
-            m_lastNodeTransform.position = initialPosition;
-            break;
+            // m_lastNodeTransform.position = initialPositions.last();
+            for (int i = 0; i < nbVertices; ++i) {
+                mesh->updateVertexPosition(m_selectedVertexIndices[i], initialPositions[i]);
+            }
+            
+            m_activeTransforms--; 
+            if (m_activeTransforms == 0) {  // Check if all transformations are done
+                m_transformMode = TransformMode::None;
+            }
+
+            return;
         }
         
         QVector3D planeNormal = -m_camera->getFront();
@@ -876,24 +901,39 @@ void GLWidget::grabVerticesSelected()
         QVector3D currentIntersection = rayPlaneIntersection(rayOrigin, rayDirection, planePoint, planeNormal);
         QVector3D delta = currentIntersection - previousIntersection;
 
-        vertexPosition += delta;
-        mesh->updateVertexPosition(m_selectedVertexIndices.last(), vertexPosition);
+        for (int i = 0; i < nbVertices; ++i) {
+            verticesPositions[i] += delta;
+            mesh->updateVertexPosition(m_selectedVertexIndices[i], verticesPositions[i]);
+        }
+
         update();
-        if (m_activeTransforms == m_nbTotalActiveTransform) m_lastNodeTransform.position = vertexPosition;
+        if (m_activeTransforms == m_nbTotalActiveTransform) m_lastNodeTransform.position = initialPositions.last();
 
         previousIntersection = currentIntersection;
 
         // Undo translation
         if (QApplication::mouseButtons() & Qt::RightButton) {
-            m_lastNodeTransform.position = initialPosition;
+            // m_lastNodeTransform.position = initialPositions.last();
+            for (int i = 0; i < nbVertices; ++i) {
+                mesh->updateVertexPosition(m_selectedVertexIndices[i], initialPositions[i]);
+            }
             // std::cout << "Translation canceled" << std::endl;
-            break;
+            
+            m_activeTransforms--; 
+            if (m_activeTransforms == 0) {  // Check if all transformations are done
+                m_transformMode = TransformMode::None;
+            }
+
+            return;
         }
     }
 
     if (m_activeTransforms == m_nbTotalActiveTransform) {
-        mesh->updateVertexPosition(m_selectedVertexIndices.last(), m_lastNodeTransform.position);
-        m_initialNodeTransform.position = m_lastNodeTransform.position;
+        // mesh->updateVertexPosition(m_selectedVertexIndices.last(), m_lastNodeTransform.position);
+        // m_initialNodeTransform.position = m_lastNodeTransform.position;
+        for (int i = 0; i < nbVertices; ++i) {
+            mesh->updateVertexPosition(m_selectedVertexIndices[i], verticesPositions[i]);
+        }
     }
 
     m_activeTransforms--; 
@@ -905,12 +945,173 @@ void GLWidget::grabVerticesSelected()
 
 void GLWidget::scaleVerticesSelected()
 {
-    if (m_selectedVertexIndices.isEmpty()) return;
+    if (m_selectedVertexIndices.size() < 1) return;
+    m_activeTransforms++;
 
+    Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+
+    QVector<QVector3D> initialPositions;
+    for (int index : m_selectedVertexIndices) initialPositions.append(mesh->getVertices()[index].position);
+
+    QVector3D midlePoint = getMidlePoint(initialPositions);
+    
+    QVector<QVector3D> verticesPositions = initialPositions;
+
+    QPoint initialMousePos = mapFromGlobal(QCursor::pos());
+    float scaleFactor = 1.0f;
+
+    size_t nbVertices = m_selectedVertexIndices.size();
+
+    while (!(QApplication::mouseButtons() & Qt::LeftButton)) {
+        QCoreApplication::processEvents();
+
+        if (m_transformMode != TransformMode::Scale || m_activeTransforms < m_nbTotalActiveTransform) {
+            // m_lastNodeTransform.position = initialPositions.last();
+            for (int i = 0; i < nbVertices; ++i) {
+                mesh->updateVertexPosition(m_selectedVertexIndices[i], initialPositions[i]);
+            }
+            
+            m_activeTransforms--; 
+            if (m_activeTransforms == 0) {  // Check if all transformations are done
+                m_transformMode = TransformMode::None;
+            }
+
+            return;
+        }
+        
+        QPoint currentMousePos = mapFromGlobal(QCursor::pos());
+        int deltaMouse = currentMousePos.y() - initialMousePos.y();
+
+        scaleFactor = qMax(0.01f, 1.0f + deltaMouse * 0.01f);
+
+        for (int i = 0; i < nbVertices; ++i) {
+            QVector3D delta = verticesPositions[i] - midlePoint;
+            verticesPositions[i] = midlePoint + delta * scaleFactor;
+            mesh->updateVertexPosition(m_selectedVertexIndices[i], verticesPositions[i]);
+        }
+
+        update();
+        if (m_activeTransforms == m_nbTotalActiveTransform) m_lastNodeTransform.position = initialPositions.last();
+
+        // Undo translation
+        if (QApplication::mouseButtons() & Qt::RightButton) {
+            // m_lastNodeTransform.position = initialPositions.last();
+            for (int i = 0; i < nbVertices; ++i) {
+                mesh->updateVertexPosition(m_selectedVertexIndices[i], initialPositions[i]);
+            }
+            // std::cout << "Translation canceled" << std::endl;
+            
+            m_activeTransforms--; 
+            if (m_activeTransforms == 0) {  // Check if all transformations are done
+                m_transformMode = TransformMode::None;
+            }
+
+            return;
+        }
+    }
+
+    if (m_activeTransforms == m_nbTotalActiveTransform) {
+        // mesh->updateVertexPosition(m_selectedVertexIndices.last(), m_lastNodeTransform.position);
+        // m_initialNodeTransform.position = m_lastNodeTransform.position;
+        for (int i = 0; i < nbVertices; ++i) {
+            mesh->updateVertexPosition(m_selectedVertexIndices[i], verticesPositions[i]);
+        }
+    }
+
+    m_activeTransforms--; 
+    if (m_activeTransforms == 0) {  // Check if all transformations are done
+        m_transformMode = TransformMode::None;
+    }
 }
 
 void GLWidget::rotateVerticesSelected()
 {
-    if (m_selectedVertexIndices.isEmpty()) return;
+    if (m_selectedVertexIndices.size() < 1) return;
+    m_activeTransforms++;
 
+    Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+
+    QVector<QVector3D> initialPositions;
+    for (int index : m_selectedVertexIndices) initialPositions.append(mesh->getVertices()[index].position);
+
+    QVector3D pivotPoint = getMidlePoint(initialPositions);
+
+    QVector3D rotationAxis = -m_camera->getFront();
+
+    QPoint initialMousePos = mapFromGlobal(QCursor::pos());
+    float totalAngle = 0.0f;
+
+    QVector<QVector3D> rotatedPositions = initialPositions;
+    size_t nbVertices = m_selectedVertexIndices.size();
+
+    while (!(QApplication::mouseButtons() & Qt::LeftButton)) {
+        QCoreApplication::processEvents();
+
+        if (m_transformMode != TransformMode::Rotate || m_activeTransforms < m_nbTotalActiveTransform) {
+            // m_lastNodeTransform.position = initialPositions.last();
+            for (int i = 0; i < nbVertices; ++i) {
+                mesh->updateVertexPosition(m_selectedVertexIndices[i], initialPositions[i]);
+            }
+            
+            m_activeTransforms--; 
+            if (m_activeTransforms == 0) {  // Check if all transformations are done
+                m_transformMode = TransformMode::None;
+            }
+
+            return;
+        }
+        
+        QPoint currentMousePos = mapFromGlobal(QCursor::pos());
+        int deltaX = currentMousePos.x() - initialMousePos.x();
+        int deltaY = currentMousePos.y() - initialMousePos.y();
+
+        rotationAxis = QVector3D(deltaY, -deltaX, 0.0f).normalized();
+
+        float angleIncrement = deltaX * 0.01f;
+        totalAngle += angleIncrement;
+
+        QMatrix4x4 rotationMatrix;
+        rotationMatrix.setToIdentity();
+        rotationMatrix.translate(pivotPoint);
+        rotationMatrix.rotate(qRadiansToDegrees(angleIncrement), rotationAxis);
+        rotationMatrix.translate(-pivotPoint);
+
+        for (int i = 0; i < nbVertices; ++i) {
+            QVector4D rotatedVertex = rotationMatrix * QVector4D(initialPositions[i], 1.0);
+            rotatedPositions[i] = rotatedVertex.toVector3D();
+            mesh->updateVertexPosition(m_selectedVertexIndices[i], rotatedPositions[i]);
+        }
+
+        update();
+        if (m_activeTransforms == m_nbTotalActiveTransform) m_lastNodeTransform.position = initialPositions.last();
+
+        // Undo translation
+        if (QApplication::mouseButtons() & Qt::RightButton) {
+            // m_lastNodeTransform.position = initialPositions.last();
+            for (int i = 0; i < nbVertices; ++i) {
+                mesh->updateVertexPosition(m_selectedVertexIndices[i], initialPositions[i]);
+            }
+            // std::cout << "Translation canceled" << std::endl;
+            
+            m_activeTransforms--; 
+            if (m_activeTransforms == 0) {  // Check if all transformations are done
+                m_transformMode = TransformMode::None;
+            }
+
+            return;
+        }
+    }
+
+    if (m_activeTransforms == m_nbTotalActiveTransform) {
+        // mesh->updateVertexPosition(m_selectedVertexIndices.last(), m_lastNodeTransform.position);
+        // m_initialNodeTransform.position = m_lastNodeTransform.position;
+        for (int i = 0; i < nbVertices; ++i) {
+            mesh->updateVertexPosition(m_selectedVertexIndices[i], rotatedPositions[i]);
+        }
+    }
+
+    m_activeTransforms--; 
+    if (m_activeTransforms == 0) {  // Check if all transformations are done
+        m_transformMode = TransformMode::None;
+    }
 }
