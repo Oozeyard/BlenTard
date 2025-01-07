@@ -20,6 +20,10 @@ Context::Context(QWidget *parent) : QMenu(parent) {
 
     addSeparator();
     QAction *subdivideAction = addAction("Subdivide");
+    QMenu *EdgeCollapseMenu = addMenu("Edge Collapse");
+    QAction *edgeCollapseAction10 = EdgeCollapseMenu->addAction("10%");
+    QAction *edgeCollapseAction20 = EdgeCollapseMenu->addAction("20%");
+    QAction *edgeCollapseAction50 = EdgeCollapseMenu->addAction("50%");
     QMenu *SmoothMenu = addMenu("Smooth");
     QAction *LaplacianSmoothAction = SmoothMenu->addAction("Laplacian");
     QAction *TaubinSmoothAction = SmoothMenu->addAction("Taubin");
@@ -60,6 +64,15 @@ Context::Context(QWidget *parent) : QMenu(parent) {
     });
     connect(subdivideAction, &QAction::triggered, [this]() {
         emit actionTriggered(SUBDIVIDE);
+    });
+    connect(edgeCollapseAction10, &QAction::triggered, [this]() {
+        emit actionTriggered(EDGE_COLLAPSE_10);
+    });
+    connect(edgeCollapseAction20, &QAction::triggered, [this]() {
+        emit actionTriggered(EDGE_COLLAPSE_20);
+    });
+    connect(edgeCollapseAction50, &QAction::triggered, [this]() {
+        emit actionTriggered(EDGE_COLLAPSE_50);
     });
     connect(LaplacianSmoothAction, &QAction::triggered, [this]() {
         emit actionTriggered(LAPLACIAN_SMOOTH);
