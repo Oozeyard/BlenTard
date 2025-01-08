@@ -104,6 +104,8 @@ void MainWindow::InitMenuBar() {
     QAction *openAction = fileMenu->addAction("Open");
     QAction *saveAction = fileMenu->addAction("Save");
     QAction *exitAction = fileMenu->addAction("Exit");
+    openAction->setEnabled(false); // Disable open
+    saveAction->setEnabled(false); // Disable save
     connect(newAction, &QAction::triggered, glWidget, &GLWidget::clearScene);
     connect(exitAction, &QAction::triggered, this, &QMainWindow::close);
 
@@ -111,10 +113,13 @@ void MainWindow::InitMenuBar() {
     QMenu *editMenu = menuBar->addMenu("Edit");
     QAction *undoAction = editMenu->addAction("Undo");
     QAction *redoAction = editMenu->addAction("Redo");
+    undoAction->setEnabled(false); // Disable undo
+    redoAction->setEnabled(false); // Disable redo
 
     // Render menu
     QMenu *renderMenu = menuBar->addMenu("Render");
     QAction *renderAction = renderMenu->addAction("Render Image");
+    renderAction->setEnabled(false); // Disable render
 
     setMenuBar(menuBar);
 }

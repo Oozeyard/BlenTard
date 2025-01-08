@@ -59,7 +59,7 @@ void GLWidget::initializeGL()
     m_shaderRender = new Shader("./src/shaders/vertex_shader_rendered.glsl", "./src/shaders/fragment_shader_rendered.glsl");
 
     m_shaderSelected = m_shaderRender;
-    m_shading = ShadingMode::SHADER_RENDER;
+    m_shading = ShadingMode::SHADER_SOLID;
 
     // Create the shadowmap shader program
     m_shaderShadowMap = new Shader("./src/shaders/vertex_shader_shadowmap.glsl", "./src/shaders/fragment_shader_shadowmap.glsl");
@@ -438,6 +438,7 @@ void GLWidget::activateTool(Tool* tool) {
         break;
     case WIRE:
         m_shading = ShadingMode::SHADER_WIRE;
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         break;
     case ORTHOGRAPHIC:
         m_camera->setOrthographic();
@@ -500,6 +501,30 @@ void GLWidget::doAction(const ActionType &actionType) {
         Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
         if (mesh) {
             mesh->subdivideLoop();
+        }
+        break;
+    }
+    case EDGE_COLLAPSE_10:
+    {
+        Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+        if (mesh) {
+            mesh->edgeCollapse(0.9);
+        }
+        break;
+    }
+    case EDGE_COLLAPSE_20:
+    {
+        Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+        if (mesh) {
+            mesh->edgeCollapse(0.8);
+        }
+        break;
+    }
+    case EDGE_COLLAPSE_50:
+    {
+        Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+        if (mesh) {
+            mesh->edgeCollapse(0.5);
         }
         break;
     }
@@ -999,7 +1024,7 @@ void GLWidget::scaleVerticesSelected()
         QPoint currentMousePos = mapFromGlobal(QCursor::pos());
         int deltaMouse = currentMousePos.y() - initialMousePos.y();
 
-        scaleFactor = qMax(0.01f, 1.0f + deltaMouse * 0.01f);
+        scaleFactor = qMax(0.01f, 1.0f + deltaMouse * 0.001f);
 
         for (int i = 0; i < nbVertices; ++i) {
             QVector3D delta = verticesPositions[i] - midlePoint;

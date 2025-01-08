@@ -560,3 +560,81 @@ void Mesh::unifySharedVertices() {
 
     setupMesh();
 }
+
+void Mesh::edgeCollapse(float percentage) {
+
+    if (m_indices.size() % 3 != 0) {
+        qWarning() << "Invalid mesh: indices are not divisible by 3.";
+        return;
+    }
+
+    // Unify shared vertices before collapsing edges
+    unifySharedVertices();
+
+    QHash<int, QSet<int>> adjacencyList = computeAdjacencyList();
+
+    // Number of faces before edge collapse
+    int previousFaceCount = m_indices.size() / 3;
+    while (m_indices.size() / 3 > previousFaceCount * percentage) {
+
+        float minError = FLT_MAX;
+        QPair<int, int> edgeToCollapse;
+
+        // Find the edge with the smallest error
+        for (auto it = adjacencyList.begin(); it != adjacencyList.end(); ++it) {
+            int v1 = it.key();
+            const QSet<int>& neighbors = it.value();
+
+            for (int v2 : neighbors) {
+                float error = (m_vertices[v1].position - m_vertices[v2].position).lengthSquared();
+                if (error < minError) {
+                    minError = error;
+                    edgeToCollapse = {v1, v2};
+                }
+            }
+        }
+
+        // Collapse
+        int v1 = edgeToCollapse.first;
+        int v2 = edgeToCollapse.second;
+
+        QVector3D newPosition = (m_vertices[v1].position + m_vertices[v2].position) / 2;
+        m_vertices[v1].position = newPosition;
+
+        // Update indices
+        for (int i = 0; i < m_indices.size(); i += 3) {
+            uint& idx1 = m_indices[i];
+            uint& idx2 = m_indices[i + 1];
+            uint& idx3 = m_indices[i + 2];
+
+            if (idx1 == v2) idx1 = v1;
+            if (idx2 == v2) idx2 = v1;
+            if (idx3 == v2) idx3 = v1;
+
+            if (idx1 == idx2 || idx2 == idx3 || idx3 == idx1) {
+                m_indices.remove(i, 3);
+                i -= 3;
+            }
+        }
+
+        adjacencyList.remove(v2);
+        QSet<int>& neighborsV1 = adjacencyList[v1];
+        QSet<int>& neighborsV2 = adjacencyList[v2];
+        neighborsV1.unite(neighborsV2);
+        neighborsV1.remove(v1);
+
+        for (auto& neighbors : adjacencyList) {
+            neighbors.remove(v2);
+            if (neighbors.contains(v1)) {
+                neighbors.insert(v1);
+            }
+        }
+
+        computeNormals();
+    }
+
+    qDebug() << "Mesh simplified to" << m_indices.size() / 3 << "faces.";
+    setupMesh();
+}
+
+
