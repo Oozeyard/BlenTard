@@ -89,6 +89,8 @@ public:
     
     // tools
     void subdivide();
+    void subdivideLoop();
+    void subdivideCatmullClark() {}
     void LaplacianSmooth(int iterations, float lambda);
     void TaubinSmooth(int iterations, float lambda, float mu);
 
@@ -96,9 +98,8 @@ public:
     void computeNormals();
     void computeTangents();
     void computeTexCoords();
-    QHash<int, QSet<int>> computeAdjacencyList();
     void unifySharedVertices();
-
+    QHash<int, QSet<int>> computeAdjacencyList();
     uint textureFromFile(const QString& path, const QString& directory);
 
 protected:

@@ -26,6 +26,9 @@ uniform int numNormalTextures; // Number of normal textures
 uniform int numMetalicTextures; // Number of normal textures
 uniform int numRoughnessTextures; // Number of normal textures
 uniform bool selected;
+uniform bool editMode;
+uniform bool editable;
+uniform vec3 objectColor;
 
 uniform Light light;
 uniform mat4 lightSpaceMatrix;
@@ -63,6 +66,16 @@ float computeShadow(vec4 fragPosLightSpace) {
 void main() {
     if (selected) {
         FragColor = vec4(1.0, 0.5, 0.0, 1.0);
+        return;
+    }
+
+    if (editMode) {
+        FragColor = vec4(objectColor, 1.0);
+        return;
+    }
+
+    if (editable) {
+        FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         return;
     }
 

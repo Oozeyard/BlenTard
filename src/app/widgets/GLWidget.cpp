@@ -215,6 +215,7 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
             if (m_currentNode->isEditMode()) {
                 m_currentNode->setEditMode();
                 m_isEditMode = false;
+                m_currentNode->setSelected();
             } else {
                 m_rootNode->disableAllEditMode();
                 m_currentNode->setEditMode();
@@ -486,6 +487,22 @@ void GLWidget::doAction(const ActionType &actionType) {
         }
         break;
     }
+    case SUBDIVIDECATMULLCLARK:
+    {
+        Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+        if (mesh) {
+            mesh->subdivideCatmullClark();
+        }
+        break;
+    }
+    case SUBDIVIDELOOP:
+    {
+        Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+        if (mesh) {
+            mesh->subdivideLoop();
+        }
+        break;
+    }
     case LAPLACIAN_SMOOTH:
     {
         Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
@@ -546,7 +563,7 @@ void GLWidget::createSuzanne()
 }
 void GLWidget:: loadCustomModel() 
 {
-    QString fileName = QFileDialog::getOpenFileName(nullptr, "Open Model", QDir::currentPath(), "Model Files (*.obj *.fbx)");
+    QString fileName = QFileDialog::getOpenFileName(nullptr, "Open Model", QDir::currentPath(), "Model Files (*.obj *.fbx *.gltf *.glb)");
     if (fileName.isEmpty()) return;
     QString modelName = QFileInfo(fileName).baseName();
     makeCurrent();
@@ -876,7 +893,7 @@ void GLWidget::grabVerticesSelected()
 
     QVector3D previousIntersection = rayPlaneIntersection(rayOrigin, rayDirection, planePoint, planeNormal);
 
-    size_t nbVertices = m_selectedVertexIndices.size();
+    int nbVertices = m_selectedVertexIndices.size();
     
     while (!(QApplication::mouseButtons() & Qt::LeftButton)) {
         QCoreApplication::processEvents();
@@ -960,7 +977,7 @@ void GLWidget::scaleVerticesSelected()
     QPoint initialMousePos = mapFromGlobal(QCursor::pos());
     float scaleFactor = 1.0f;
 
-    size_t nbVertices = m_selectedVertexIndices.size();
+    int nbVertices = m_selectedVertexIndices.size();
 
     while (!(QApplication::mouseButtons() & Qt::LeftButton)) {
         QCoreApplication::processEvents();
@@ -1042,7 +1059,7 @@ void GLWidget::rotateVerticesSelected()
     float totalAngle = 0.0f;
 
     QVector<QVector3D> rotatedPositions = initialPositions;
-    size_t nbVertices = m_selectedVertexIndices.size();
+    int nbVertices = m_selectedVertexIndices.size();
 
     while (!(QApplication::mouseButtons() & Qt::LeftButton)) {
         QCoreApplication::processEvents();

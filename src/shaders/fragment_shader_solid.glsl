@@ -16,6 +16,9 @@ struct Material {
 
 uniform Material material;
 uniform bool selected;
+uniform bool editMode;
+uniform bool editable;
+uniform vec3 objectColor;
 
 in vec3 FragPos;
 in vec3 Normal;
@@ -38,16 +41,20 @@ void main() {
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * material.albedo;
 
-    // Specular
-    vec3 viewDir = normalize(light_position - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = material.specular * spec;
-
     if (selected) {
         FragColor = vec4(1.0, 0.5, 0.0, 1.0);
         return;
     }
 
-    FragColor = vec4(vec3(ambient + diffuse + specular), 1.0);
+    if (editMode) {
+        FragColor = vec4(objectColor, 1.0);
+        return;
+    }
+
+    if (editable) {
+        FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        return;
+    }
+
+    FragColor = vec4(vec3(ambient + diffuse), 1.0);
 }

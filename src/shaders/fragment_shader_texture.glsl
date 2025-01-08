@@ -22,6 +22,7 @@ uniform int numRoughnessTextures; // Number of normal textures
 
 uniform bool selected;
 uniform bool editMode;
+uniform bool editable;
 uniform vec3 objectColor;
 
 in vec3 FragPos;
@@ -58,6 +59,11 @@ void main() {
 
     if (editMode) {
         FragColor = vec4(objectColor, 1.0);
+        return;
+    }
+
+    if (editable) {
+        FragColor = vec4(0.0, 0.0, 0.0, 1.0);
         return;
     }
 

@@ -33,6 +33,7 @@ void Node::removeChild(Node* child)
         child->setParent(nullptr);
         emit nodeChanged();
     }
+
 }
 
 void Node::setName(const QString& name) 
@@ -86,9 +87,8 @@ void Node::deleteSelectedNodes() {
     for (Node* child : m_children) {
         if (child->isSelected()) {
             removeChild(child);
-        } else {
-            child->deleteSelectedNodes();
-        }
+        } 
+        child->deleteSelectedNodes();
     }
 }
 

@@ -154,6 +154,14 @@ void Mesh::draw(QOpenGLShaderProgram* program)
 
     // Draw vertices if in edit mode
     if (m_editMode) {
+
+        program->setUniformValue("editable", true);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glLineWidth(2.0f); 
+        glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, nullptr);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        program->setUniformValue("editable", false);
+
         program->setUniformValue("editMode", true);
         glPointSize(5.0f);
         for (int i = 0; i < m_vertices.size(); ++i) {
@@ -252,8 +260,8 @@ void Mesh::subdivide()
         const Vertex& v2 = m_vertices[v2Index];
 
         Vertex midpoint;
-        midpoint.position = (v1.position + v2.position) / 2.0f;
-        midpoint.texCoords = (v1.texCoords + v2.texCoords) / 2.0f;
+        midpoint.position = (v1.position + v2.position) * 0.5f;
+        midpoint.texCoords = (v1.texCoords + v2.texCoords) * 0.5f;
 
         uint midpointIndex = newVertices.size();
         newVertices.append(midpoint);
@@ -271,10 +279,10 @@ void Mesh::subdivide()
         uint m2 = getMidpoint(i2, i3);
         uint m3 = getMidpoint(i3, i1);
 
-        newIndices.append(i1); newIndices.append(m1); newIndices.append(m3); // Triangle 1
-        newIndices.append(i2); newIndices.append(m2); newIndices.append(m1); // Triangle 2
-        newIndices.append(i3); newIndices.append(m3); newIndices.append(m2); // Triangle 3
-        newIndices.append(m1); newIndices.append(m2); newIndices.append(m3); // Triangle 4 (central)
+        newIndices.append(i1); newIndices.append(m1); newIndices.append(m3);
+        newIndices.append(i2); newIndices.append(m2); newIndices.append(m1);
+        newIndices.append(i3); newIndices.append(m3); newIndices.append(m2);
+        newIndices.append(m1); newIndices.append(m2); newIndices.append(m3);
     }
 
     m_vertices = newVertices;
@@ -285,6 +293,13 @@ void Mesh::subdivide()
 
     setupMesh();
 }
+
+void Mesh::subdivideLoop()
+{
+
+}
+
+
 
 void Mesh::LaplacianSmooth(int iterations = 1, float lambda = 0.5f) {
 

@@ -19,7 +19,11 @@ Context::Context(QWidget *parent) : QMenu(parent) {
     QAction *unifyMeshAction = addAction("Unify Mesh");
 
     addSeparator();
-    QAction *subdivideAction = addAction("Subdivide");
+    QMenu *SubdivideMenu = addMenu("Subdivide");
+    QAction *subdivideAction = SubdivideMenu->addAction("Default");
+    QAction *subdivideLoopAction = SubdivideMenu->addAction("Loop");
+    // QAction *subdivideCatmullClarkAction = SubdivideMenu->addAction("Catmull-Clark");
+
     QMenu *SmoothMenu = addMenu("Smooth");
     QAction *LaplacianSmoothAction = SmoothMenu->addAction("Laplacian");
     QAction *TaubinSmoothAction = SmoothMenu->addAction("Taubin");
@@ -61,6 +65,12 @@ Context::Context(QWidget *parent) : QMenu(parent) {
     connect(subdivideAction, &QAction::triggered, [this]() {
         emit actionTriggered(SUBDIVIDE);
     });
+    connect(subdivideLoopAction, &QAction::triggered, [this]() {
+        emit actionTriggered(SUBDIVIDELOOP);
+    });
+    // connect(subdivideCatmullClarkAction, &QAction::triggered, [this]() {
+    //     emit actionTriggered(SUBDIVIDECATMULLCLARK);
+    // });
     connect(LaplacianSmoothAction, &QAction::triggered, [this]() {
         emit actionTriggered(LAPLACIAN_SMOOTH);
     });
