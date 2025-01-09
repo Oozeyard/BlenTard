@@ -237,6 +237,14 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
             }
         }
         break;
+    case Qt::Key_U: // Unify
+        if (m_currentNode) {
+            Mesh* mesh = dynamic_cast<Mesh*>(m_currentNode);
+            if (mesh) {
+                mesh->unifySharedVertices();
+            }
+        }
+        break;
     case Qt::Key_E:
         std::cout << "Edit Mode" << std::endl;
         if (m_currentNode) {
@@ -450,11 +458,24 @@ void GLWidget::activateTool(Tool* tool) {
         break;
     case RECTANGLE_SELECT:
         break;
-    case CIRCLE_SELECT:
-        break;
     case VERTEX_SELECT:
-        break;
-    case FACE_SELECT:
+        std::cout << "Edit Mode" << std::endl;
+        if (m_currentNode) {
+            if (m_currentNode->isEditMode()) {
+                m_currentNode->setEditMode();
+                m_isEditMode = false;
+                m_currentNode->setSelected();
+            } else {
+                m_rootNode->disableAllEditMode();
+                m_currentNode->setEditMode();
+                m_isEditMode = true;
+                m_currentNode->setSelected();
+                Mesh *mesh = dynamic_cast<Mesh*>(m_currentNode);
+                if (mesh) {
+                    mesh->deselectAllVertices();
+                }
+            }
+        }
         break;
     case SHADING:
         break;

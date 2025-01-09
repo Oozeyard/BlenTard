@@ -69,13 +69,9 @@ void MainWindow::InitTools() {
     // Selection
     Tool select = Tool("Select", QIcon("src/app/icons/select/select_set.svg"), ToolType::SELECT);
     Tool rectangleSelect = Tool("Rectangle Select", QIcon("src/app/icons/select/rectangle_select.svg"), ToolType::RECTANGLE_SELECT);
-    Tool circleSelect = Tool("Circle Select", QIcon("src/app/icons/select/circle_select.svg"), ToolType::CIRCLE_SELECT);
     Tool vertexSelect = Tool("Vertex Select", QIcon("src/app/icons/select/vertex_select.svg"), ToolType::VERTEX_SELECT);
-    Tool faceSelect = Tool("Face Select", QIcon("src/app/icons/select/face_select.svg"), ToolType::FACE_SELECT);
     select.addSubTool(rectangleSelect);
-    select.addSubTool(circleSelect);
     select.addSubTool(vertexSelect);
-    select.addSubTool(faceSelect);
     toolBar->addTool(select);
 
     // Shading

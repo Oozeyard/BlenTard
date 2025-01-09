@@ -24,9 +24,7 @@ enum ToolType {
     // Selection
     SELECT,
     RECTANGLE_SELECT,
-    CIRCLE_SELECT,
     VERTEX_SELECT,
-    FACE_SELECT,
 
     // Shading
     SHADING,
