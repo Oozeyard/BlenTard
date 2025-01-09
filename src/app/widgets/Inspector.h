@@ -88,7 +88,7 @@ private:
     QGroupBox *lightGroup;
     QPushButton *lightColorButton;
     QDoubleSpinBox *lightIntensitySpinBox;
-    QComboBox *lightTypeComboBox;
+    QLabel *lightTypeLabel;
 
     void toggleLight(bool checked);
     

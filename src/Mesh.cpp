@@ -638,18 +638,18 @@ void Mesh::edgeCollapse(float percentage) {
     QHash<uint, QSet<uint>> adjacencyList = computeAdjacencyList();
 
     // Number of faces before edge collapse
-    int previousFaceCount = m_indices.size() / 3;
+    uint previousFaceCount = m_indices.size() / 3;
     while (m_indices.size() / 3 > previousFaceCount * percentage) {
 
         float minError = FLT_MAX;
-        QPair<int, int> edgeToCollapse;
+        QPair<uint, uint> edgeToCollapse;
 
         // Find the edge with the smallest error
         for (auto it = adjacencyList.begin(); it != adjacencyList.end(); ++it) {
             int v1 = it.key();
             const QSet<uint>& neighbors = it.value();
 
-            for (int v2 : neighbors) {
+            for (uint v2 : neighbors) {
                 float error = (m_vertices[v1].position - m_vertices[v2].position).lengthSquared();
                 if (error < minError) {
                     minError = error;
@@ -659,8 +659,8 @@ void Mesh::edgeCollapse(float percentage) {
         }
 
         // Collapse
-        int v1 = edgeToCollapse.first;
-        int v2 = edgeToCollapse.second;
+        uint v1 = edgeToCollapse.first;
+        uint v2 = edgeToCollapse.second;
 
         QVector3D newPosition = (m_vertices[v1].position + m_vertices[v2].position) / 2;
         m_vertices[v1].position = newPosition;

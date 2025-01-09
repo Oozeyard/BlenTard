@@ -235,11 +235,9 @@ void Inspector::initLightWidget(QVBoxLayout *layout) {
     lightLayout = new QVBoxLayout();
 
     // Light type
-    lightTypeComboBox = new QComboBox();
-    lightTypeComboBox->addItem("Directional");
-    lightTypeComboBox->addItem("Point");
-    lightTypeComboBox->addItem("Spot");
-    lightLayout->addWidget(lightTypeComboBox);
+    lightTypeLabel = new QLabel();
+    lightTypeLabel->setText("Type: None");
+    lightLayout->addWidget(lightTypeLabel);
 
     // Light color
     lightColorButton = new QPushButton("Set Light Color");
@@ -259,7 +257,7 @@ void Inspector::initLightWidget(QVBoxLayout *layout) {
 }
 
 void Inspector::toggleLight(bool checked) {
-    lightTypeComboBox->setVisible(checked);
+    lightTypeLabel->setVisible(checked);
     lightColorButton->setVisible(checked);
     lightIntensitySpinBox->setVisible(checked);
 }
@@ -379,7 +377,21 @@ void Inspector::updateLight(Node *node) {
   QSignalBlocker blockerIntensity(lightIntensitySpinBox);
 
   lightIntensitySpinBox->setValue(light->getIntensity());
-  lightTypeComboBox->setCurrentIndex(static_cast<int>(light->getType()));
+  switch (light->getType())
+  {
+  case Light::LightType::DIRECTIONAL:
+    lightTypeLabel->setText("Type: Directional");
+    break;
+  case Light::LightType::POINT:
+    lightTypeLabel->setText("Type: Point");
+    break;
+  case Light::LightType::SPOT:
+    lightTypeLabel->setText("Type: Spot");
+    break;
+  default:
+    lightTypeLabel->setText("Type: None");
+    break;
+  }
 }
 
 void Inspector::onPositionChanged() {

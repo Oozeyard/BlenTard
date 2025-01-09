@@ -21,12 +21,7 @@ void Light::initializeShadowMap(int width, int height) {
     m_shadowWidth = width;
     m_shadowHeight = height;
 
-    QOpenGLFramebufferObjectFormat format;
-    format.setAttachment(QOpenGLFramebufferObject::Depth);
-    format.setTextureTarget(GL_TEXTURE_2D);
-    format.setInternalTextureFormat(GL_DEPTH_COMPONENT24);
-
-    m_shadowFBO = new QOpenGLFramebufferObject(width, height, format);
+    m_shadowFBO = new QOpenGLFramebufferObject(QSize(width, height), QOpenGLFramebufferObject::Depth, GL_TEXTURE_2D);
     m_shadowTexture = m_shadowFBO->texture();
 }
 
@@ -49,19 +44,16 @@ void Light::renderShadowMap(Shader* shader, Node* root) {
 
     // Set the light's view and projection matrices
     if (m_type == DIRECTIONAL) {
-        // Directional light uses orthographic projection
         m_lightProjection.setToIdentity();
         m_lightProjection.ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
         m_lightView.setToIdentity();
         m_lightView.lookAt(-getTransform().position, QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f));
     } else if (m_type == POINT) {
-        // Point light uses perspective projection
         m_lightProjection.setToIdentity();
         m_lightProjection.perspective(90.0f, 1.0f, 0.1f, 100.0f);
         m_lightView.setToIdentity();
         m_lightView.lookAt(-getTransform().position, QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f));
     } else if (m_type == SPOT) {
-        // Spot light uses perspective projection with a narrower field of view
         m_lightProjection.setToIdentity();
         m_lightProjection.perspective(45.0f, 1.0f, 0.1f, 100.0f);
         m_lightView.setToIdentity();
