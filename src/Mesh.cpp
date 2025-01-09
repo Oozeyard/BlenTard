@@ -410,7 +410,7 @@ void Mesh::LaplacianSmooth(int iterations = 1, float lambda = 0.5f) {
     setupMesh();
 }
 
-void Mesh::TaubinSmooth(int iterations = 1, float lambda = 0.5f, float mu = 0.53f) {
+void Mesh::TaubinSmooth(int iterations, float lambda, float mu) {
 
     if (m_vertices.isEmpty() || m_indices.isEmpty()) {
         std::cerr << "Mesh is empty, cannot smooth.\n";
@@ -646,7 +646,7 @@ void Mesh::edgeCollapse(float percentage) {
 
         // Find the edge with the smallest error
         for (auto it = adjacencyList.begin(); it != adjacencyList.end(); ++it) {
-            int v1 = it.key();
+            uint v1 = it.key();
             const QSet<uint>& neighbors = it.value();
 
             for (uint v2 : neighbors) {

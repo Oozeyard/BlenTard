@@ -92,7 +92,7 @@ public:
     void subdivideLoop();
     void subdivideCatmullClark() {}
     void LaplacianSmooth(int iterations, float lambda);
-    void TaubinSmooth(int iterations, float lambda, float mu);
+    void TaubinSmooth(int iterations = 1, float lambda = 0.5f, float mu = 0.53f);
     void edgeCollapse(float percentage);
 
     // utils
