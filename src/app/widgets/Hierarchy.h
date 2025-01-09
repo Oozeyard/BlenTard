@@ -25,7 +25,7 @@ signals:
 
 public slots:
     void updateNode(Node *node);
-    void onItemClicked(QTreeWidgetItem *item, int column);
+    void onItemClicked(QTreeWidgetItem *item);
     void selectNode(Node *node);
 
 private:

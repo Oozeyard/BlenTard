@@ -2,7 +2,7 @@
 
 
 GLWidget::GLWidget(QWidget *parent)
-    : QOpenGLWidget(parent), m_contextMenu(new Context(this)), m_currentNode(nullptr)
+    : QOpenGLWidget(parent), m_currentNode(nullptr), m_contextMenu(new Context(this))
 {
     setFocusPolicy(Qt::StrongFocus);  // Permit to receive key events
     // QWidget::setMouseTracking(true);  // Permit to receive mouse move events
@@ -58,7 +58,7 @@ void GLWidget::initializeGL()
     m_shaderTexture = new Shader("./src/shaders/vertex_shader_texture.glsl", "./src/shaders/fragment_shader_texture.glsl");
     m_shaderRender = new Shader("./src/shaders/vertex_shader_rendered.glsl", "./src/shaders/fragment_shader_rendered.glsl");
 
-    m_shaderSelected = m_shaderRender;
+    m_shaderSelected = m_shaderSolid;
     m_shading = ShadingMode::SHADER_SOLID;
 
     // Create the shadowmap shader program

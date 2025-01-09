@@ -48,7 +48,7 @@ void Hierarchy::addNode(Node *node, QTreeWidgetItem *parentItem)
     }
 }
 
-void Hierarchy::onItemClicked(QTreeWidgetItem *item, int column) {
+void Hierarchy::onItemClicked(QTreeWidgetItem *item) {
     if (!item) return;
 
     // retrieve node
