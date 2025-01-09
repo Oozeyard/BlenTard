@@ -2,7 +2,7 @@
 
 
 GLWidget::GLWidget(QWidget *parent)
-    : QOpenGLWidget(parent), m_contextMenu(new Context(this)), m_currentNode(nullptr)
+    : QOpenGLWidget(parent)/* , m_contextMenu(new Context(this)), m_currentNode(nullptr) */
 {
     setFocusPolicy(Qt::StrongFocus);  // Permit to receive key events
     // QWidget::setMouseTracking(true);  // Permit to receive mouse move events
@@ -21,20 +21,50 @@ GLWidget::GLWidget(QWidget *parent)
 
 GLWidget::~GLWidget()
 {
+    std::cout << "GLWidget destructor" << std::endl;
     makeCurrent();
+    std::cout << "makeCurrent" << std::endl;
     if (m_shaderSelected) delete m_shaderSelected;
+    std::cout << "m_shaderSelected" << std::endl;
     if (m_shaderSolid) delete m_shaderSolid;
+    std::cout << "m_shaderSolid" << std::endl;
     if (m_shaderTexture) delete m_shaderTexture;
+    std::cout << "m_shaderTexture" << std::endl;
     if (m_shaderRender) delete m_shaderRender;
+    std::cout << "m_shaderRender" << std::endl;
+    if (m_shaderShadowMap) delete m_shaderShadowMap;
+    std::cout << "m_shaderShadowMap" << std::endl;
+
     if (m_shaderGridOverlayProgram) delete m_shaderGridOverlayProgram;
+    std::cout << "m_shaderGridOverlayProgram" << std::endl;
     if (m_shaderSelectionProgram) delete m_shaderSelectionProgram;
+    std::cout << "m_shaderSelectionProgram" << std::endl;
+    if (m_gizmoProgram) delete m_gizmoProgram;
+    std::cout << "m_gizmoProgram" << std::endl;
+
     if (m_gridOverlay) delete m_gridOverlay;
+    std::cout << "m_gridOverlay" << std::endl;
+
     if (m_rootNode) delete m_rootNode;
+    std::cout << "m_rootNode" << std::endl;
+    if (m_currentNode) delete m_currentNode;
+    std::cout << "m_currentNode" << std::endl;
+
     if (m_camera) delete m_camera;
+    std::cout << "m_camera" << std::endl;
     if (m_contextMenu) delete m_contextMenu;
+    std::cout << "m_contextMenu" << std::endl;
+    
     if (m_gizmo) delete m_gizmo;
+    std::cout << "m_gizmo" << std::endl;
+
+    if (m_glPainter) delete m_glPainter;
+    std::cout << "m_glPainter" << std::endl;
+    
     if (m_selectionFBO) delete m_selectionFBO;
+    std::cout << "m_selectionFBO" << std::endl;
     doneCurrent();
+    std::cout << "doneCurrent" << std::endl;
 }
 
 QSize GLWidget::minimumSizeHint() const
@@ -58,7 +88,7 @@ void GLWidget::initializeGL()
     m_shaderTexture = new Shader("./src/shaders/vertex_shader_texture.glsl", "./src/shaders/fragment_shader_texture.glsl");
     m_shaderRender = new Shader("./src/shaders/vertex_shader_rendered.glsl", "./src/shaders/fragment_shader_rendered.glsl");
 
-    m_shaderSelected = m_shaderRender;
+    m_shaderSelected = m_shaderSolid;
     m_shading = ShadingMode::SHADER_SOLID;
 
     // Create the shadowmap shader program
@@ -68,11 +98,9 @@ void GLWidget::initializeGL()
     m_shaderSelectionProgram = new Shader("./src/shaders/selection/vertex_shader_selection.glsl", "./src/shaders/selection/fragment_shader_selection.glsl");
     initializeSelectionBuffer();
 
-
     // Create the grid overlay shader program
     m_shaderGridOverlayProgram = new Shader("./src/shaders/grid/vertex_shader_grid_overlay.glsl", "./src/shaders/grid/fragment_shader_grid_overlay.glsl");
     m_gridOverlay = new GridOverlay(m_shaderGridOverlayProgram);
-
 
     // Gizmo
     m_gizmoProgram = new Shader("./src/shaders/gizmo/vertex_shader_gizmo.glsl", "./src/shaders/gizmo/fragment_shader_gizmo.glsl");
@@ -226,6 +254,12 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
                     mesh->deselectAllVertices();
                 }
             }
+        }
+        break;
+    case Qt::Key_T:
+        if (m_currentNode) {
+            Mesh *mesh = dynamic_cast<Mesh*>(m_currentNode);
+            if (mesh) mesh->TaubinSmooth();
         }
         break;
 

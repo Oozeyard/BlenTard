@@ -100,7 +100,7 @@ public:
     void computeTangents();
     void computeTexCoords();
     void unifySharedVertices();
-    QHash<int, QSet<int>> computeAdjacencyList();
+    QHash<uint, QSet<uint>> computeAdjacencyList();
     uint textureFromFile(const QString& path, const QString& directory);
 
 protected:

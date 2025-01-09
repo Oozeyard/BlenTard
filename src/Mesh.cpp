@@ -294,12 +294,84 @@ void Mesh::subdivide()
     setupMesh();
 }
 
-void Mesh::subdivideLoop()
-{
+void Mesh::subdivideLoop() {
+    QVector<Vertex> newVertices = m_vertices;
+    QVector<uint> newIndices;
+    QHash<QPair<uint, uint>, uint> edgeVertexMap;
 
+    QHash<uint, QSet<uint>> adjacencyList = computeAdjacencyList();
+
+    auto getEdgeVertex = [&](uint v1, uint v2) -> uint {
+        QPair<uint, uint> edge = qMakePair(qMin(v1, v2), qMax(v1, v2));
+        if (edgeVertexMap.contains(edge)) {
+            return edgeVertexMap[edge];
+        }
+
+        const Vertex& vertex1 = m_vertices[v1];
+        const Vertex& vertex2 = m_vertices[v2];
+
+        QVector3D edgePosition = (vertex1.position + vertex2.position) * 0.5f;
+        QVector3D edgeNormal = (vertex1.normal + vertex2.normal).normalized();
+        QVector2D edgeTexCoords = (vertex1.texCoords + vertex2.texCoords) * 0.5f;
+
+        Vertex edgeVertex;
+        edgeVertex.position = edgePosition;
+        edgeVertex.normal = edgeNormal;
+        edgeVertex.texCoords = edgeTexCoords;
+
+        uint edgeVertexIndex = newVertices.size();
+        newVertices.append(edgeVertex);
+        edgeVertexMap[edge] = edgeVertexIndex;
+
+        return edgeVertexIndex;
+    };
+
+    for (int i = 0; i < m_indices.size(); i += 3) {
+        uint i1 = m_indices[i];
+        uint i2 = m_indices[i + 1];
+        uint i3 = m_indices[i + 2];
+
+        uint e1 = getEdgeVertex(i1, i2);
+        uint e2 = getEdgeVertex(i2, i3);
+        uint e3 = getEdgeVertex(i3, i1);
+
+        newIndices.append(i1); newIndices.append(e1); newIndices.append(e3);
+        newIndices.append(i2); newIndices.append(e2); newIndices.append(e1);
+        newIndices.append(i3); newIndices.append(e3); newIndices.append(e2);
+        newIndices.append(e1); newIndices.append(e2); newIndices.append(e3);
+    }
+
+    QVector<QVector3D> newPositions(m_vertices.size(), QVector3D(0.0f, 0.0f, 0.0f));
+    for (auto it = adjacencyList.begin(); it != adjacencyList.end(); ++it) {
+        uint vertexIndex = it.key();
+        const QSet<uint>& neighbors = it.value();
+
+        int n = neighbors.size();
+        if (n < 3) continue; // Skip invalid vertices
+
+        float beta = (n == 3) ? (3.0f / 16.0f) : (3.0f / (8.0f * n));
+        float alpha = 1.0f - n * beta;
+
+        QVector3D average(0.0f, 0.0f, 0.0f);
+        for (uint neighbor : neighbors) {
+            average += m_vertices[neighbor].position;
+        }
+
+        newPositions[vertexIndex] = alpha * m_vertices[vertexIndex].position + beta * average;
+    }
+
+    for (int i = 0; i < m_vertices.size(); ++i) {
+        newVertices[i].position = newPositions[i];
+    }
+
+    m_vertices = newVertices;
+    m_indices = newIndices;
+
+    computeNormals();
+    computeTangents();
+
+    setupMesh();
 }
-
-
 
 void Mesh::LaplacianSmooth(int iterations = 1, float lambda = 0.5f) {
 
@@ -310,9 +382,8 @@ void Mesh::LaplacianSmooth(int iterations = 1, float lambda = 0.5f) {
     
     for (int i = 0; i < iterations; ++i) {
         // neighbors
-        QHash<int, QSet<int>> adjacencyList = computeAdjacencyList();
+        QHash<uint, QSet<uint>> adjacencyList = computeAdjacencyList();
 
-        // Calcul des nouvelles positions
         QVector<QVector3D> newPositions(m_vertices.size());
         for (int i = 0; i < m_vertices.size(); ++i) {
             QVector3D sum(0, 0, 0);
@@ -327,17 +398,15 @@ void Mesh::LaplacianSmooth(int iterations = 1, float lambda = 0.5f) {
             newPositions[i] = m_vertices[i].position + lambda * (sum - m_vertices[i].position);
         }
 
-        // Mise à jour des positions
+        // Update positions
         for (int i = 0; i < m_vertices.size(); ++i) {
             m_vertices[i].position = newPositions[i];
         }
     }
 
-    // Recalculer les normales et tangentes après le lissage
     computeNormals();
     computeTangents();
 
-    // Reconfigurer les buffers OpenGL
     setupMesh();
 }
 
@@ -350,9 +419,8 @@ void Mesh::TaubinSmooth(int iterations = 1, float lambda = 0.5f, float mu = 0.53
 
     for (int i = 0; i < iterations; ++i) {
         // neighbors
-        QHash<int, QSet<int>> adjacencyList = computeAdjacencyList();
+        QHash<uint, QSet<uint>> adjacencyList = computeAdjacencyList();
 
-        // Calcul des nouvelles positions
         QVector<QVector3D> newPositions(m_vertices.size());
         for (int i = 0; i < m_vertices.size(); ++i) {
             QVector3D sum(0, 0, 0);
@@ -367,12 +435,11 @@ void Mesh::TaubinSmooth(int iterations = 1, float lambda = 0.5f, float mu = 0.53
             newPositions[i] = m_vertices[i].position + lambda * (sum - m_vertices[i].position);
         }
 
-        // Mise à jour des positions
+        // Update positions
         for (int i = 0; i < m_vertices.size(); ++i) {
             m_vertices[i].position = newPositions[i];
         }
 
-        // Calcul des nouvelles positions
         QVector<QVector3D> newPositions2(m_vertices.size());
         for (int i = 0; i < m_vertices.size(); ++i) {
             QVector3D sum(0, 0, 0);
@@ -387,17 +454,14 @@ void Mesh::TaubinSmooth(int iterations = 1, float lambda = 0.5f, float mu = 0.53
             newPositions2[i] = m_vertices[i].position + mu * (sum - m_vertices[i].position);
         }
 
-        // Mise à jour des positions
         for (int i = 0; i < m_vertices.size(); ++i) {
             m_vertices[i].position = newPositions2[i];
         }
     }
 
-    // Recalculer les normales et tangentes après le lissage
     computeNormals();
     computeTangents();
 
-    // Reconfigurer les buffers OpenGL
     setupMesh();
 }
 
@@ -515,13 +579,13 @@ void Mesh::computeTexCoords() {
     }
 }
 
-QHash<int, QSet<int>> Mesh::computeAdjacencyList() {
-    QHash<int, QSet<int>> adjacencyList;
+QHash<uint, QSet<uint>> Mesh::computeAdjacencyList() {
+    QHash<uint, QSet<uint>> adjacencyList;
 
     for (int i = 0; i < m_indices.size(); i += 3) {
-        int v0 = m_indices[i];
-        int v1 = m_indices[i + 1];
-        int v2 = m_indices[i + 2];
+        uint v0 = m_indices[i];
+        uint v1 = m_indices[i + 1];
+        uint v2 = m_indices[i + 2];
 
         adjacencyList[v0].insert(v1);
         adjacencyList[v0].insert(v2);
@@ -571,7 +635,7 @@ void Mesh::edgeCollapse(float percentage) {
     // Unify shared vertices before collapsing edges
     unifySharedVertices();
 
-    QHash<int, QSet<int>> adjacencyList = computeAdjacencyList();
+    QHash<uint, QSet<uint>> adjacencyList = computeAdjacencyList();
 
     // Number of faces before edge collapse
     int previousFaceCount = m_indices.size() / 3;
@@ -583,7 +647,7 @@ void Mesh::edgeCollapse(float percentage) {
         // Find the edge with the smallest error
         for (auto it = adjacencyList.begin(); it != adjacencyList.end(); ++it) {
             int v1 = it.key();
-            const QSet<int>& neighbors = it.value();
+            const QSet<uint>& neighbors = it.value();
 
             for (int v2 : neighbors) {
                 float error = (m_vertices[v1].position - m_vertices[v2].position).lengthSquared();
@@ -618,8 +682,8 @@ void Mesh::edgeCollapse(float percentage) {
         }
 
         adjacencyList.remove(v2);
-        QSet<int>& neighborsV1 = adjacencyList[v1];
-        QSet<int>& neighborsV2 = adjacencyList[v2];
+        QSet<uint>& neighborsV1 = adjacencyList[v1];
+        QSet<uint>& neighborsV2 = adjacencyList[v2];
         neighborsV1.unite(neighborsV2);
         neighborsV1.remove(v1);
 

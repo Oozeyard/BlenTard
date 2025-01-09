@@ -15,6 +15,7 @@ Node::~Node()
     for (Node* child : m_children) {
         delete child; // Recursively delete all children
     }
+    delete this;
 }
 
 

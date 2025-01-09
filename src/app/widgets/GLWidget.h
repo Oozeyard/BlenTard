@@ -102,27 +102,27 @@ private:
     bool m_isEditMode { false };
 
     // Shaders
-    Shader *m_shaderSolid; // Solid color
-    Shader *m_shaderTexture; // Texture
-    Shader *m_shaderRender; // Render (w/ light)
+    Shader *m_shaderSolid { nullptr }; // Solid color
+    Shader *m_shaderTexture { nullptr }; // Texture
+    Shader *m_shaderRender { nullptr }; // Render (w/ light)
 
-    Shader *m_shaderShadowMap; // Shadow map
-    Shader *m_shaderSelected; // Selected  shader
+    Shader *m_shaderShadowMap { nullptr }; // Shadow map
+    Shader *m_shaderSelected { nullptr }; // Selected  shader
 
-    Shader *m_shaderGridOverlayProgram;
-    Shader *m_shaderSelectionProgram;  // Shader for selection
-    Shader *m_gizmoProgram;
+    Shader *m_shaderGridOverlayProgram { nullptr };
+    Shader *m_shaderSelectionProgram { nullptr };  // Shader for selection
+    Shader *m_gizmoProgram { nullptr };
 
     // Grid Overlay
     GridOverlay *m_gridOverlay;
 
     // Scene 
     Node *m_rootNode;
-    Node *m_currentNode;
+    Node *m_currentNode { nullptr };
 
     // Camera 
     Camera *m_camera;
-    Context *m_contextMenu;
+    Context *m_contextMenu { new Context(this) };
 
     // Gizmo
     Gizmo *m_gizmo;

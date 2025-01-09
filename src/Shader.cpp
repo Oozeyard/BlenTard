@@ -5,11 +5,6 @@ Shader::Shader(const QString& vertexShaderPath, const QString& fragmentShaderPat
     initShaders(vertexShaderPath, fragmentShaderPath);
 }
 
-Shader::~Shader()
-{
-
-}
-
 void Shader::initShaders(const QString& vertexShaderPath, const QString& fragmentShaderPath)
 {
     if (!addShaderFromSourceFile(QOpenGLShader::Vertex, vertexShaderPath.toStdString().c_str())) {
