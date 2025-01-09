@@ -612,7 +612,7 @@ void GLWidget::doAction(const ActionType &actionType) {
 void GLWidget::clearScene() 
 {
     makeCurrent();
-    if(m_rootNode) delete m_rootNode;
+    // if(m_rootNode) delete m_rootNode;
     m_rootNode = new Node("Root");
     emit updateNode(m_rootNode);
     doneCurrent();
