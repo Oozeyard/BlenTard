@@ -20,7 +20,7 @@ Context::Context(QWidget *parent) : QMenu(parent) {
 
     addSeparator();
     QMenu *SubdivideMenu = addMenu("Subdivide");
-    QAction *subdivideAction = SubdivideMenu->addAction("Default");
+    QAction *subdivideAction = SubdivideMenu->addAction("Edge Midpoint");
     QAction *subdivideLoopAction = SubdivideMenu->addAction("Loop");
     // QAction *subdivideCatmullClarkAction = SubdivideMenu->addAction("Catmull-Clark");
 
