@@ -79,11 +79,9 @@ void MainWindow::InitTools() {
     Tool renderShading = Tool("Render", QIcon("src/app/icons/shading/shading_rendered.svg"), ToolType::RENDER);
     Tool textureShading = Tool("Texture", QIcon("src/app/icons/shading/shading_texture.svg"), ToolType::TEXTURE);
     Tool solidShading = Tool("Solid", QIcon("src/app/icons/shading/shading_solid.svg"), ToolType::SOLID);
-    Tool wireShading = Tool("Wire", QIcon("src/app/icons/shading/shading_wire.svg"), ToolType::WIRE);
     shading.addSubTool(renderShading);
     shading.addSubTool(textureShading);
     shading.addSubTool(solidShading);
-    shading.addSubTool(wireShading);
     toolBar->addTool(shading);
 
     // Caméra

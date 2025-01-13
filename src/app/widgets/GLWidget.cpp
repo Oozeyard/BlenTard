@@ -493,7 +493,6 @@ void GLWidget::activateTool(Tool* tool) {
         break;
     case WIRE:
         m_shading = ShadingMode::SHADER_WIRE;
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         break;
     case ORTHOGRAPHIC:
         m_camera->setOrthographic();
