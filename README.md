@@ -1,5 +1,5 @@
 # BlenTard
-Blender-like made with QT &amp; OpenGl
+Blender like made with QT &amp; OpenGl
 
 ## Requirement : 
 - Assimp  
@@ -13,7 +13,7 @@ make
 ```
 
 
-## Présentation : 
+## Presentation : 
 https://github.com/user-attachments/assets/999d8b51-c5a2-415a-8541-f3fe2251bde6
 
 
